@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #1b2c63;
+  --color-navy-deep: #14214b;
+  --color-orange: #e85b18;
+  --color-orange-soft: #fbede2;
+  --color-paper: #faf8f4;
+  --color-paper-dark: #f1ede4;
+  --color-ink: #1e2233;
+  --color-hairline: #e7e2d6;
+
+  --color-status-green: #4f7d4f;
+  --color-status-amber: #9a7b2f;
+  --color-status-red: #a34a3a;
+
+  --font-heading: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Manila-folder category tab */
+.folder-tab {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 24% 100%, 16% 62%, 0 62%);
+}
+
+.folder-tab-active {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 24% 100%, 16% 62%, 0 62%);
+}
+
+/* 201-folder record card with a subtle top tab corner */
+.folder-card {
+  position: relative;
+  border: 1px solid var(--color-hairline);
+  background: #ffffff;
+  border-radius: 4px;
+}
+.folder-card::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 34px;
+  height: 34px;
+  background: var(--color-hairline);
+  border-radius: 0 4px 0 0;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.folder-card:hover {
+  border-color: #d9d2c2;
+  box-shadow: 0 2px 8px rgba(27, 44, 99, 0.06);
+}
+
+/* Flat scrollbar to match the calm aesthetic */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d9d2c2;
+  border-radius: 6px;
+  border: 2px solid var(--color-paper);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Entrance animation */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-rise {
+  animation: rise 0.55s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+/* Login brand-panel glow decorations */
+.glow-orange {
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: rgba(232, 91, 24, 0.25);
+  filter: blur(70px);
+  pointer-events: none;
+}
+.glow-white {
+  position: absolute;
+  left: -100px;
+  bottom: -120px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: rgba(250, 248, 244, 0.06);
+  filter: blur(60px);
+  pointer-events: none;
+}
+.glow-paper {
+  position: absolute;
+  right: -140px;
+  top: -140px;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  background: rgba(27, 44, 99, 0.06);
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+/* Manila-folder tab used on the login brand panel */
+.folder-tab-panel {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 38% 100%, 30% 46%, 0 46%);
+  border-top: 1px solid rgba(250, 248, 244, 0.08);
+}

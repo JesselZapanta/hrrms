@@ -1,0 +1,32 @@
+appId: ph.gov.ozamiz.cco.hrrms
+productName: HRRMS
+directories:
+  buildResources: build
+  output: dist
+files:
+  - out/**
+  - "!**/.vscode/*"
+  - "!src/*"
+  - "!electron.vite.config.{js,ts,mjs,cjs}"
+  - "!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}"
+  - "!{.env,.env.*,.npmrc,pnpm-lock.yaml,package-lock.json}"
+  - "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
+extraResources:
+  - from: database
+    to: database
+    filter:
+      - "**/*.sql"
+asar: true
+asarUnpack:
+  - "**/*.node"
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  shortcutName: HRRMS
+  artifactName: ${productName}-Setup-${version}.${ext}

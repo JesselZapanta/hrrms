@@ -1,0 +1,43 @@
+import { contextBridge, ipcRenderer } from 'electron'
+
+const api = {
+  auth: {
+    login: (username, password) => ipcRenderer.invoke('auth:login', username, password)
+  },
+  users: {
+    list: () => ipcRenderer.invoke('users:list'),
+    create: (data) => ipcRenderer.invoke('users:create', data),
+    update: (id, data) => ipcRenderer.invoke('users:update', id, data),
+    remove: (id) => ipcRenderer.invoke('users:remove', id)
+  },
+  employees: {
+    list: (query = {}) => ipcRenderer.invoke('employees:list', query),
+    get: (id) => ipcRenderer.invoke('employees:get', id),
+    create: (data) => ipcRenderer.invoke('employees:create', data),
+    update: (id, data) => ipcRenderer.invoke('employees:update', id, data),
+    remove: (id) => ipcRenderer.invoke('employees:remove', id)
+  },
+  categories: {
+    listAll: () => ipcRenderer.invoke('categories:listAll'),
+    list: () => ipcRenderer.invoke('categories:list'),
+    create: (name, sort) => ipcRenderer.invoke('categories:create', name, sort),
+    update: (id, data) => ipcRenderer.invoke('categories:update', id, data),
+    remove: (id) => ipcRenderer.invoke('categories:remove', id),
+    createSub: (categoryId, name, sort) => ipcRenderer.invoke('categories:createSub', categoryId, name, sort),
+    updateSub: (id, data) => ipcRenderer.invoke('categories:updateSub', id, data),
+    removeSub: (id) => ipcRenderer.invoke('categories:removeSub', id)
+  },
+  files: {
+    list: (employeeId) => ipcRenderer.invoke('files:list', employeeId),
+    upload: (data) => ipcRenderer.invoke('files:upload', data),
+    uploadFromPath: (data) => ipcRenderer.invoke('files:uploadFromPath', data),
+    rename: (id, name) => ipcRenderer.invoke('files:rename', id, name),
+    remove: (id) => ipcRenderer.invoke('files:remove', id),
+    openPath: (id) => ipcRenderer.invoke('files:openPath', id)
+  },
+  dialog: {
+    pickPdf: () => ipcRenderer.invoke('dialog:pickPdf')
+  }
+}
+
+contextBridge.exposeInMainWorld('api', api)

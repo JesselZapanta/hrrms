@@ -1,0 +1,29 @@
+{
+  "name": "hrrms",
+  "version": "1.0.0",
+  "description": "Human Resource Records Management System (HRRMS) - City Council Office, LGU Ozamiz",
+  "main": "./out/main/index.js",
+  "author": "City Council Office - LGU Ozamiz",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "start": "electron-vite preview",
+    "build": "electron-vite build",
+    "build:win": "electron-vite build && electron-builder --win"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^5.2.0",
+    "electron": "^43.4.1",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "tailwindcss": "^4.3.3",
+    "vite": "^7.3.6"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "pdfjs-dist": "^6.2.108",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  }
+}
