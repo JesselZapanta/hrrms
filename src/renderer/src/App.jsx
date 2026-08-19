@@ -58,15 +58,15 @@ export default function App() {
   return (
     <Layout user={user} view={view} onNavigate={setView} onLogout={logout}>
       {view === 'dashboard' && <Dashboard user={user} onNavigate={setView} />}
-      {view === 'employees' && <Employees onOpenFolder={openFolder} />}
-      {view === 'folder' && folderEmployee && (
+      {view === 'employees' && user.role !== 'admin' && <Employees onOpenFolder={openFolder} />}
+      {view === 'folder' && user.role !== 'admin' && folderEmployee && (
         <EmployeeFolder
           employee={folderEmployee}
           categories={categories}
           onBack={() => setView('employees')}
         />
       )}
-      {view === 'users' && user.role === 'admin' && <Users />}
+      {view === 'users' && user.role === 'admin' && <Users currentUser={user} />}
       {view === 'categories' && <Categories />}
     </Layout>
   )

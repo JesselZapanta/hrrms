@@ -1,20 +1,21 @@
 import { useState } from 'react'
+import Toast from '../components/Toast.jsx'
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [show, setShow] = useState(false)
-  const [error, setError] = useState('')
+  const [toast, setToast] = useState(null)
   const [busy, setBusy] = useState(false)
 
   const submit = async (e) => {
     e.preventDefault()
     setBusy(true)
-    setError('')
+    setToast(null)
     const res = await window.api.auth.login(username, password)
     setBusy(false)
     if (!res.ok) {
-      setError(res.error || 'Login failed')
+      setToast(res.error || 'Login failed')
       return
     }
     onLogin(res.data)
@@ -22,6 +23,7 @@ export default function Login({ onLogin }) {
 
   return (
     <div className="flex h-full">
+      {toast && <Toast message={toast} tone="error" onClose={() => setToast(null)} />}
       {/* Brand panel */}
       <div className="relative hidden w-[46%] overflow-hidden bg-navy text-paper lg:flex lg:flex-col lg:justify-between lg:px-12 lg:py-10">
         <div className="glow-orange" />
@@ -142,15 +144,6 @@ export default function Login({ onLogin }) {
               </div>
             </div>
 
-            {error && (
-              <div className="flex items-start gap-2 rounded-lg border border-status-red/25 bg-status-red/5 px-3.5 py-2.5 text-sm text-status-red animate-rise">
-                <span className="mt-0.5">
-                  <AlertIcon />
-                </span>
-                {error}
-              </div>
-            )}
-
             <button
               type="submit"
               disabled={busy}
@@ -193,16 +186,6 @@ function LockIcon() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-  )
-}
-
-function AlertIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" y1="8" x2="12" y2="12" />
-      <line x1="12" y1="16" x2="12.01" y2="16" />
     </svg>
   )
 }

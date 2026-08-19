@@ -44,27 +44,30 @@ export default function Employees({ onOpenFolder }) {
 
   return (
     <div className="mx-auto max-w-5xl px-8 py-8">
-      <header className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="font-heading text-2xl font-bold text-navy">Employees</h1>
-          <p className="font-mono text-xs uppercase tracking-wider text-ink/40">
-            201-files · {employees.length} on record
-          </p>
+      {/* Toolbar */}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="relative w-full max-w-sm">
+          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/35">
+            <SearchIcon />
+          </span>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search name, position, or record no…"
+            className="w-full rounded-xl border border-hairline bg-white py-2.5 pl-10 pr-3.5 text-sm outline-none transition-all placeholder:text-ink/30 focus:border-orange focus:ring-2 focus:ring-orange/20"
+          />
         </div>
-        <button
-          onClick={() => setEditing({ ...EMPTY })}
-          className="rounded bg-orange px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-orange/90"
-        >
-          + Add Employee
-        </button>
-      </header>
-
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search by name, position, or record no…"
-        className="mb-6 w-full rounded border border-hairline bg-white px-4 py-2.5 text-sm outline-none transition-colors focus:border-orange focus:ring-1 focus:ring-orange"
-      />
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-xs text-ink/40">{employees.length} on record</span>
+          <button
+            onClick={() => setEditing({ ...EMPTY })}
+            className="flex items-center gap-2 rounded-xl bg-orange px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-orange/25 transition-all hover:bg-orange/90 hover:shadow-lg hover:shadow-orange/30 active:scale-[.98]"
+          >
+            <PlusIcon />
+            Add Employee
+          </button>
+        </div>
+      </div>
 
       {employees.length === 0 ? (
         <div className="rounded-md border border-dashed border-hairline bg-white px-5 py-14 text-center text-sm text-ink/40">
@@ -226,5 +229,23 @@ function Field({ label, required, children }) {
       </label>
       {children}
     </div>
+  )
+}
+
+function SearchIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  )
+}
+
+function PlusIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
   )
 }

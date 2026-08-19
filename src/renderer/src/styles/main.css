@@ -32,6 +32,17 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Clickable elements show pointer */
+button,
+[role='button'],
+select,
+label[for] {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+
 /* Manila-folder category tab */
 .folder-tab {
   clip-path: polygon(0 0, 100% 0, 100% 100%, 24% 100%, 16% 62%, 0 62%);
@@ -92,6 +103,21 @@ body {
 }
 .animate-rise {
   animation: rise 0.55s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+/* Toast slide-in */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.toast-in {
+  animation: toast-in 0.3s cubic-bezier(0.2, 0.8, 0.3, 1) both;
 }
 
 /* Login brand-panel glow decorations */
