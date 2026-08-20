@@ -1,4 +1,4 @@
-import { ipcMain, dialog, shell } from 'electron'
+import { ipcMain, dialog, shell, app } from 'electron'
 import { AuthService } from './services/AuthService.js'
 import { UserService } from './services/UserService.js'
 import { EmployeeService } from './services/EmployeeService.js'
@@ -17,6 +17,9 @@ const wrap = (fn) => async (_event, ...args) => {
 }
 
 export function registerIpc() {
+  // App
+  ipcMain.handle('app:version', wrap(() => app.getVersion()))
+
   // Auth
   ipcMain.handle('auth:login', wrap((u, p) => AuthService.login(u, p)))
 
