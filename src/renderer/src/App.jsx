@@ -6,6 +6,7 @@ import Employees from './pages/Employees.jsx'
 import EmployeeFolder from './pages/EmployeeFolder.jsx'
 import Users from './pages/Users.jsx'
 import Categories from './pages/Categories.jsx'
+import Profile from './pages/Profile.jsx'
 
 const SESSION_KEY = 'hrrms.session'
 
@@ -55,9 +56,15 @@ export default function App() {
     setView('folder')
   }
 
+  const handleUserChange = (u) => {
+    localStorage.setItem(SESSION_KEY, JSON.stringify(u))
+    setUser(u)
+  }
+
   return (
     <Layout user={user} view={view} onNavigate={setView} onLogout={logout}>
       {view === 'dashboard' && <Dashboard user={user} onNavigate={setView} />}
+      {view === 'profile' && <Profile currentUser={user} onUserChange={handleUserChange} />}
       {view === 'employees' && user.role !== 'admin' && <Employees onOpenFolder={openFolder} />}
       {view === 'folder' && user.role !== 'admin' && folderEmployee && (
         <EmployeeFolder

@@ -2,27 +2,34 @@ import bcrypt from 'bcryptjs'
 import { getDb } from '../db.js'
 
 const pickUser = (u) =>
-  u && { id: u.id, username: u.username, full_name: u.full_name, role: u.role, status: u.status, created_at: u.created_at }
+  u && { id: u.id, username: u.username, full_name: u.full_name, role: u.role, status: u.status, profile_pic: u.profile_pic, created_at: u.created_at }
 
 export const UserService = {
   list() {
     return getDb()
-      .prepare('SELECT id, username, full_name, role, status, created_at FROM users ORDER BY full_name')
+      .prepare('SELECT id, username, full_name, role, status, profile_pic, created_at FROM users ORDER BY full_name')
       .all()
   },
 
-  create({ username, password, full_name, role }) {
+  create({ username, password, full_name, role, status, profile_pic }) {
     if (!username || !password || !full_name) {
       throw new Error('Username, password, and full name are required')
     }
     const hash = bcrypt.hashSync(String(password), 12)
     const result = getDb()
-      .prepare('INSERT INTO users (username, password_hash, full_name, role) VALUES (?, ?, ?, ?)')
-      .run(String(username).trim(), hash, String(full_name).trim(), role === 'admin' ? 'admin' : 'staff')
+      .prepare('INSERT INTO users (username, password_hash, full_name, role, status, profile_pic) VALUES (?, ?, ?, ?, ?, ?)')
+      .run(
+        String(username).trim(),
+        hash,
+        String(full_name).trim(),
+        role === 'admin' ? 'admin' : 'staff',
+        status === 'inactive' ? 'inactive' : 'active',
+        profile_pic ? String(profile_pic) : null
+      )
     return this.get(result.lastInsertRowid)
   },
 
-  update(id, { username, full_name, role, password, status }) {
+  update(id, { username, full_name, role, password, status, profile_pic }) {
     const db = getDb()
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id)
     if (!user) throw new Error('User not found')
@@ -33,6 +40,10 @@ export const UserService = {
     if (full_name !== undefined) { set.push('full_name = ?'); params.push(String(full_name).trim()) }
     if (role !== undefined) { set.push('role = ?'); params.push(role === 'admin' ? 'admin' : 'staff') }
     if (status !== undefined) { set.push('status = ?'); params.push(status === 'active' ? 'active' : 'inactive') }
+    if (profile_pic !== undefined) {
+      set.push('profile_pic = ?')
+      params.push(profile_pic ? String(profile_pic) : null)
+    }
     if (password) {
       set.push('password_hash = ?')
       params.push(bcrypt.hashSync(String(password), 12))
