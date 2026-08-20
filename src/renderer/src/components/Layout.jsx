@@ -26,7 +26,9 @@ export default function Layout({ user, view, onNavigate, children, onLogout }) {
   const [confirmLogout, setConfirmLogout] = useState(false)
   const [version, setVersion] = useState('')
   useEffect(() => {
-    window.api?.app?.version?.().then(setVersion).catch(() => {})
+    window.api?.app?.version?.()
+      ?.then((res) => setVersion(res?.data ?? res ?? ''))
+      .catch(() => {})
   }, [])
   const nav = NAV.filter(
     (item) =>
