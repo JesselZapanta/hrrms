@@ -5,11 +5,16 @@
   "main": "./out/main/index.js",
   "author": "City Council Office - LGU Ozamiz",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JesselZapanta/hrrms.git"
+  },
   "scripts": {
     "dev": "electron-vite dev",
     "start": "electron-vite preview",
     "build": "electron-vite build",
-    "build:win": "electron-vite build && electron-builder --win"
+    "build:win": "electron-vite build && electron-builder --win",
+    "release": "electron-vite build && electron-builder --win --publish always"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -22,8 +27,51 @@
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "electron-updater": "^6.8.9",
     "pdfjs-dist": "^6.2.108",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
+  },
+  "build": {
+    "appId": "ph.gov.ozamiz.hrrms",
+    "productName": "HRRMS",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "out/**",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "database",
+        "to": "database"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "HRRMS"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "JesselZapanta",
+        "repo": "hrrms"
+      }
+    ]
   }
 }

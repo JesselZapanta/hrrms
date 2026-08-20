@@ -56,6 +56,7 @@ INSERT OR IGNORE INTO subcategories (category_id, name, sort_order) VALUES
   (8, 'Training and development records', 4),
   (8, 'Other official documents affecting employment status', 5);
 
--- Default admin: username "admin", password "admin123" (bcrypt-hashed)
+-- Default users: admin / password, staff / password (bcrypt-hashed)
 INSERT OR IGNORE INTO users (username, password_hash, full_name, role) VALUES
-  ('admin', '$2b$12$e0fZx4PKAYME4G6Z9s844.EGwgtzaBXJsj762iJ6I3UcKbTaqzvXS', 'Administrator', 'admin');
+  ('admin', '$2b$12$h3oqRyG.r3agsSVT4ghrkusBRIFXC35zGuYjWZEjQZmuK3M/VOjjK', 'Administrator', 'admin'),
+  ('staff', '$2b$12$h3oqRyG.r3agsSVT4ghrkusBRIFXC35zGuYjWZEjQZmuK3M/VOjjK', 'HR Staff', 'staff');

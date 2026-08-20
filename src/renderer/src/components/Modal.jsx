@@ -9,9 +9,9 @@ export function Modal({ title, onClose, children, wide, compact }) {
       }}
     >
       <div
-        className={`w-full ${wide ? 'max-w-3xl' : compact ? 'max-w-md' : 'max-w-lg'} overflow-hidden rounded-2xl border border-hairline bg-paper shadow-2xl shadow-navy/20 toast-in`}
+        className={`flex max-h-[90vh] w-full flex-col ${wide ? 'max-w-3xl' : compact ? 'max-w-md' : 'max-w-lg'} overflow-hidden rounded-2xl border border-hairline bg-paper shadow-2xl shadow-navy/20 toast-in`}
       >
-        <div className="flex items-center justify-between border-b border-hairline bg-white px-5 py-3.5">
+        <div className="flex shrink-0 items-center justify-between border-b border-hairline bg-white px-5 py-3.5">
           <h3 className="font-heading text-base font-semibold text-navy">{title}</h3>
           <button
             onClick={onClose}
@@ -20,7 +20,7 @@ export function Modal({ title, onClose, children, wide, compact }) {
             <CloseIcon />
           </button>
         </div>
-        <div className="p-5">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto p-5">{children}</div>
       </div>
     </div>
   )

@@ -1,4 +1,7 @@
 const STATUS_COLORS = {
+  permanent: 'bg-status-green',
+  job_order: 'bg-status-amber',
+  contract_of_service: 'bg-navy',
   active: 'bg-status-green',
   probationary: 'bg-status-amber',
   terminated: 'bg-status-red',

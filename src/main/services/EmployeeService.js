@@ -1,8 +1,13 @@
 import { getDb, getStorageDir } from '../db.js'
+import { encrypt, decrypt } from '../crypto.js'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const FIELDS = ['complete_name', 'position', 'birthday', 'status', 'complete_address']
+const FIELDS = [
+  'complete_name', 'position', 'office', 'plantilla_item', 'salary_grade',
+  'birthday', 'status', 'date_hired', 'contact_number', 'email',
+  'complete_address', 'profile_pic'
+]
 
 export const EmployeeService = {
   list({ search = '' } = {}) {
@@ -14,10 +19,12 @@ export const EmployeeService = {
           .prepare(
             `SELECT * FROM employees
              WHERE complete_name LIKE ? OR position LIKE ? OR record_no LIKE ?
+                OR office LIKE ? OR plantilla_item LIKE ? OR email LIKE ?
+                OR contact_number LIKE ?
              ORDER BY complete_name`
           )
-          .all(q, q, q)
-    return rows.map((r) => ({ ...r, file_count: this.fileCount(r.id) }))
+          .all(q, q, q, q, q, q, q)
+    return rows.map((r) => ({ ...r, profile_pic: decrypt(r.profile_pic), file_count: this.fileCount(r.id) }))
   },
 
   fileCount(id) {
@@ -26,20 +33,21 @@ export const EmployeeService = {
 
   get(id) {
     const row = getDb().prepare('SELECT * FROM employees WHERE id = ?').get(id)
-    return row || null
+    return row ? { ...row, profile_pic: decrypt(row.profile_pic) } : null
   },
 
   create(data) {
     const db = getDb()
     const clean = pick(data)
-    const insert = db.prepare(
-      `INSERT INTO employees (complete_name, position, birthday, status, complete_address)
-       VALUES (@complete_name, @position, @birthday, @status, @complete_address)`
-    )
     let id
     db.exec('BEGIN')
     try {
-      const info = insert.run(clean)
+      const info = db
+        .prepare(
+          `INSERT INTO employees (complete_name, position, office, plantilla_item, salary_grade, birthday, status, date_hired, contact_number, email, complete_address, profile_pic, record_no)
+           VALUES (@complete_name, @position, @office, @plantilla_item, @salary_grade, @birthday, @status, @date_hired, @contact_number, @email, @complete_address, @profile_pic, @record_no)`
+        )
+        .run({ ...clean, record_no: `TEMP-${Date.now()}-${Math.random().toString(36).slice(2, 7)}` })
       id = Number(info.lastInsertRowid)
       const recordNo = `201-${String(id).padStart(5, '0')}`
       db.prepare('UPDATE employees SET record_no = ? WHERE id = ?').run(recordNo, id)
@@ -63,7 +71,7 @@ export const EmployeeService = {
 
     const set = keys.map((k) => `${k} = @${k}`).join(', ')
     clean.id = id
-    db.prepare(`UPDATE employees SET ${set}, updated_at = datetime('now','localtime') WHERE id = ?`).run(clean)
+    db.prepare(`UPDATE employees SET ${set}, updated_at = datetime('now','localtime') WHERE id = @id`).run(clean)
     return this.get(id)
   },
 
@@ -88,7 +96,13 @@ export const EmployeeService = {
 function pick(data) {
   const out = {}
   for (const f of FIELDS) {
-    if (data[f] !== undefined) out[f] = String(data[f] ?? '').trim()
+    if (data[f] !== undefined) {
+      if (f === 'profile_pic') {
+        out[f] = data[f] ? encrypt(String(data[f])) : null
+      } else {
+        out[f] = String(data[f] ?? '').trim()
+      }
+    }
   }
   return out
 }

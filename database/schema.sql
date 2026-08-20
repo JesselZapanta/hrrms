@@ -16,11 +16,34 @@ CREATE TABLE IF NOT EXISTS employees (
   record_no TEXT NOT NULL UNIQUE,
   complete_name TEXT NOT NULL,
   position TEXT NOT NULL,
+  office TEXT,
+  plantilla_item TEXT,
+  salary_grade TEXT,
   birthday TEXT,
   status TEXT NOT NULL DEFAULT 'active',
+  date_hired TEXT,
+  contact_number TEXT,
+  email TEXT,
   complete_address TEXT,
+  profile_pic TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
+CREATE TABLE IF NOT EXISTS offices (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  description TEXT,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+  created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
+CREATE TABLE IF NOT EXISTS salary_grades (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  grade TEXT NOT NULL UNIQUE,
+  salary REAL NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 );
 
 CREATE TABLE IF NOT EXISTS categories (

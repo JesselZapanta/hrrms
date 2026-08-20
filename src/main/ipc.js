@@ -3,6 +3,8 @@ import { AuthService } from './services/AuthService.js'
 import { UserService } from './services/UserService.js'
 import { EmployeeService } from './services/EmployeeService.js'
 import { CategoryService } from './services/CategoryService.js'
+import { OfficeService } from './services/OfficeService.js'
+import { SalaryGradeService } from './services/SalaryGradeService.js'
 import { FileService } from './services/FileService.js'
 
 const wrap = (fn) => async (_event, ...args) => {
@@ -41,6 +43,18 @@ export function registerIpc() {
   ipcMain.handle('categories:updateSub', wrap((id, d) => CategoryService.updateSubcategory(id, d)))
   ipcMain.handle('categories:removeSub', wrap((id) => CategoryService.removeSubcategory(id)))
 
+  // Offices
+  ipcMain.handle('offices:list', wrap((q) => OfficeService.list(q)))
+  ipcMain.handle('offices:create', wrap((d) => OfficeService.create(d)))
+  ipcMain.handle('offices:update', wrap((id, d) => OfficeService.update(id, d)))
+  ipcMain.handle('offices:remove', wrap((id) => OfficeService.remove(id)))
+
+  // Salary grades
+  ipcMain.handle('salaryGrades:list', wrap((q) => SalaryGradeService.list(q)))
+  ipcMain.handle('salaryGrades:create', wrap((d) => SalaryGradeService.create(d)))
+  ipcMain.handle('salaryGrades:update', wrap((id, d) => SalaryGradeService.update(id, d)))
+  ipcMain.handle('salaryGrades:remove', wrap((id) => SalaryGradeService.remove(id)))
+
   // Files
   ipcMain.handle('files:list', wrap((employeeId) => FileService.listByEmployee(employeeId)))
   ipcMain.handle('files:upload', wrap((d) => FileService.upload(d)))
@@ -48,10 +62,9 @@ export function registerIpc() {
   ipcMain.handle('files:rename', wrap((id, name) => FileService.rename(id, name)))
   ipcMain.handle('files:remove', wrap((id) => FileService.remove(id)))
   ipcMain.handle('files:openPath', wrap((id) => {
-    const file = FileService.getPath(id)
-    if (!file) throw new Error('File not found')
-    shell.openPath(file.file_path)
-    return file.file_path
+    const { tmpPath } = FileService.openDecrypted(id)
+    shell.openPath(tmpPath)
+    return tmpPath
   }))
 
   // Dialogs

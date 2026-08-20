@@ -1,6 +1,10 @@
 import { getDb, getStorageDir } from '../db.js'
+import { encryptBuffer, decryptBuffer } from '../crypto.js'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
+
+const ENC_EXT = '.enc'
 
 export const FileService = {
   listByEmployee(employeeId) {
@@ -25,9 +29,9 @@ export const FileService = {
     fs.mkdirSync(employeeDir, { recursive: true })
 
     const safeName = sanitize(original_name)
-    const storedName = `${Date.now()}_${safeName}`
+    const storedName = `${Date.now()}_${safeName}${ENC_EXT}`
     const filePath = path.join(employeeDir, storedName)
-    fs.writeFileSync(filePath, Buffer.from(data))
+    fs.writeFileSync(filePath, encryptBuffer(Buffer.from(data)))
 
     const info = db
       .prepare(
@@ -87,7 +91,16 @@ export const FileService = {
   readData(id) {
     const file = this.getPath(id)
     if (!file) throw new Error('File not found')
-    return { file, data: fs.readFileSync(file.file_path) }
+    return { file, data: decryptBuffer(fs.readFileSync(file.file_path)) }
+  },
+
+  openDecrypted(id) {
+    const { file, data } = this.readData(id)
+    const dir = path.join(os.tmpdir(), 'hrrms-open')
+    fs.mkdirSync(dir, { recursive: true })
+    const tmpPath = path.join(dir, `${Date.now()}_${file.file_name}`)
+    fs.writeFileSync(tmpPath, data)
+    return { tmpPath, fileName: file.file_name }
   },
 
   remove(id) {

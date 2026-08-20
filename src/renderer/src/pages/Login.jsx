@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Toast from '../components/Toast.jsx'
+import Logo from '../components/Logo.jsx'
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('')
@@ -44,9 +45,7 @@ export default function Login({ onLogin }) {
         </div>
 
         <div className="relative z-10 flex items-center gap-3 animate-rise">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange font-heading text-xl font-bold text-white shadow-lg shadow-orange/30">
-            A
-          </div>
+          <Logo dot={false} />
           <div>
             <div className="font-heading text-lg font-bold leading-tight">HRRMS</div>
             <div className="font-mono text-[10px] uppercase tracking-[2px] text-paper/50">
@@ -88,9 +87,7 @@ export default function Login({ onLogin }) {
         <div className="relative z-10 w-full max-w-sm">
           {/* Mobile brand */}
           <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-navy font-heading text-xl font-bold text-white">
-              A
-            </div>
+            <Logo dot={false} />
             <div>
               <div className="font-heading text-lg font-bold text-navy">HRRMS</div>
               <div className="font-mono text-[10px] uppercase tracking-[2px] text-ink/50">
@@ -164,7 +161,7 @@ export default function Login({ onLogin }) {
           </form>
 
           <p className="mt-8 text-center font-mono text-[11px] text-ink/35 animate-rise" style={{ animationDelay: '0.18s' }}>
-            Default admin · <span className="text-ink/50">admin / admin123</span>
+            Default users · <span className="text-ink/50">admin / password · staff / password</span>
           </p>
         </div>
       </div>

@@ -27,6 +27,18 @@ const api = {
     updateSub: (id, data) => ipcRenderer.invoke('categories:updateSub', id, data),
     removeSub: (id) => ipcRenderer.invoke('categories:removeSub', id)
   },
+  offices: {
+    list: (query = {}) => ipcRenderer.invoke('offices:list', query),
+    create: (data) => ipcRenderer.invoke('offices:create', data),
+    update: (id, data) => ipcRenderer.invoke('offices:update', id, data),
+    remove: (id) => ipcRenderer.invoke('offices:remove', id)
+  },
+  salaryGrades: {
+    list: (query = {}) => ipcRenderer.invoke('salaryGrades:list', query),
+    create: (data) => ipcRenderer.invoke('salaryGrades:create', data),
+    update: (id, data) => ipcRenderer.invoke('salaryGrades:update', id, data),
+    remove: (id) => ipcRenderer.invoke('salaryGrades:remove', id)
+  },
   files: {
     list: (employeeId) => ipcRenderer.invoke('files:list', employeeId),
     upload: (data) => ipcRenderer.invoke('files:upload', data),
