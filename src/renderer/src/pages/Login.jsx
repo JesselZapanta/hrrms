@@ -159,10 +159,6 @@ export default function Login({ onLogin }) {
               )}
             </button>
           </form>
-
-          <p className="mt-8 text-center font-mono text-[11px] text-ink/35 animate-rise" style={{ animationDelay: '0.18s' }}>
-            Default users · <span className="text-ink/50">admin / password · staff / password</span>
-          </p>
         </div>
       </div>
     </div>
