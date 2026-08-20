@@ -70,7 +70,8 @@
       {
         "provider": "github",
         "owner": "JesselZapanta",
-        "repo": "hrrms"
+        "repo": "hrrms",
+        "releaseType": "release"
       }
     ]
   }
