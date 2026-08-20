@@ -1,0 +1,48 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Bump version
+        id: bump
+        shell: bash
+        run: |
+          npx semver -i minor $(node -p "require('./package.json').version") > /tmp/ver
+          node -e "const fs=require('fs');const p=require('./package.json');p.version=fs.readFileSync('/tmp/ver','utf8').trim();fs.writeFileSync('./package.json',JSON.stringify(p,null,2)+'\n')"
+          echo "version=$(cat /tmp/ver)" >> "$GITHUB_OUTPUT"
+
+      - name: Build and publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run release
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.version }}" || true
+          git push

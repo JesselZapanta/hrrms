@@ -77,7 +77,22 @@ export default function Categories() {
       setConfirmDel(null)
       setToast({ message: `Deleted "${confirmDel.name}".`, tone: 'success' })
       load()
+    } else {
+      setConfirmDel(null)
+      setToast({ message: res.error, tone: 'error' })
     }
+  }
+
+  const tryDelete = (target) => {
+    const count = target.file_count || 0
+    if (count > 0) {
+      setToast({
+        message: `"${target.name}" has ${count} filed document${count === 1 ? '' : 's'} and cannot be deleted.`,
+        tone: 'error'
+      })
+      return
+    }
+    setConfirmDel(target)
   }
 
   return (
@@ -161,7 +176,7 @@ export default function Categories() {
                     <EditIcon />
                   </button>
                   <button
-                    onClick={() => setConfirmDel({ type: 'category', id: cat.id, name: cat.name })}
+                    onClick={() => tryDelete({ type: 'category', id: cat.id, name: cat.name, file_count: cat.file_count })}
                     className="rounded-lg border border-hairline bg-white p-2 text-ink/50 transition-colors hover:border-status-red hover:bg-status-red/5 hover:text-status-red"
                     title="Delete category"
                   >
@@ -192,7 +207,7 @@ export default function Categories() {
                           <EditIcon />
                         </button>
                         <button
-                          onClick={() => setConfirmDel({ type: 'sub', id: sub.id, name: sub.name })}
+                          onClick={() => tryDelete({ type: 'sub', id: sub.id, name: sub.name, file_count: sub.file_count })}
                           className="rounded-lg p-1.5 text-ink/50 transition-colors hover:bg-status-red/5 hover:text-status-red"
                           title="Delete subcategory"
                         >

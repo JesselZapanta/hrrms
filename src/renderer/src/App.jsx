@@ -6,6 +6,8 @@ import Employees from './pages/Employees.jsx'
 import EmployeeFolder from './pages/EmployeeFolder.jsx'
 import Users from './pages/Users.jsx'
 import Categories from './pages/Categories.jsx'
+import Offices from './pages/Offices.jsx'
+import SalaryGrades from './pages/SalaryGrades.jsx'
 import Profile from './pages/Profile.jsx'
 
 const SESSION_KEY = 'hrrms.session'
@@ -74,6 +76,8 @@ export default function App() {
         />
       )}
       {view === 'users' && user.role === 'admin' && <Users currentUser={user} />}
+      {view === 'offices' && user.role === 'admin' && <Offices />}
+      {view === 'salaryGrades' && user.role === 'admin' && <SalaryGrades />}
       {view === 'categories' && <Categories />}
     </Layout>
   )

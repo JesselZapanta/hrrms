@@ -15,6 +15,7 @@ export default function Users({ currentUser }) {
   const [page, setPage] = useState(1)
   const [editing, setEditing] = useState(null)
   const [confirmDel, setConfirmDel] = useState(null)
+  const [confirmToggle, setConfirmToggle] = useState(null)
   const [error, setError] = useState('')
   const [toast, setToast] = useState(null)
   const fileRef = useRef(null)
@@ -66,7 +67,14 @@ export default function Users({ currentUser }) {
 
   const toggleStatus = async (u) => {
     const res = await window.api.users.update(u.id, { status: u.status === 'active' ? 'inactive' : 'active' })
-    if (res.ok) load()
+    if (res.ok) {
+      setConfirmToggle(null)
+      setToast({
+        message: `${u.status === 'active' ? 'Deactivated' : 'Activated'} user "${u.full_name}".`,
+        tone: 'success'
+      })
+      load()
+    }
   }
 
   const remove = async () => {
@@ -202,7 +210,7 @@ export default function Users({ currentUser }) {
                 <td className="px-5 py-3.5">
                   <div className="flex justify-end gap-1">
                     <button
-                      onClick={() => toggleStatus(u)}
+                      onClick={() => setConfirmToggle(u)}
                       title={u.status === 'active' ? 'Deactivate' : 'Activate'}
                       className={`rounded-lg p-2 transition-colors ${
                         u.status === 'active'
@@ -422,6 +430,50 @@ export default function Users({ currentUser }) {
               className="rounded-lg bg-status-red px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
             >
               Delete
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {confirmToggle && (
+        <Modal
+          title={confirmToggle.status === 'active' ? 'Deactivate user' : 'Activate user'}
+          onClose={() => setConfirmToggle(null)}
+          compact
+        >
+          <div className="flex items-center gap-4">
+            <span
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${
+                confirmToggle.status === 'active' ? 'bg-status-red/10 text-status-red' : 'bg-status-green/10 text-status-green'
+              }`}
+            >
+              <ToggleIcon />
+            </span>
+            <div>
+              <div className="text-sm font-semibold text-ink">
+                {confirmToggle.status === 'active' ? 'Deactivate this user?' : 'Activate this user?'}
+              </div>
+              <p className="mt-0.5 text-xs text-ink/50">
+                {confirmToggle.status === 'active'
+                  ? `${confirmToggle.full_name} (@${confirmToggle.username}) will be blocked from signing in.`
+                  : `${confirmToggle.full_name} (@${confirmToggle.username}) will be allowed to sign in again.`}
+              </p>
+            </div>
+          </div>
+          <div className="mt-5 flex items-center justify-end gap-2 border-t border-hairline pt-4">
+            <button
+              onClick={() => setConfirmToggle(null)}
+              className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 transition-colors hover:bg-paper-dark"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => toggleStatus(confirmToggle)}
+              className={`rounded-lg px-4 py-2 text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-[.98] ${
+                confirmToggle.status === 'active' ? 'bg-status-red' : 'bg-status-green'
+              }`}
+            >
+              {confirmToggle.status === 'active' ? 'Deactivate' : 'Activate'}
             </button>
           </div>
         </Modal>

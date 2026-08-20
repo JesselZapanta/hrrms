@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs'
 import { getDb } from '../db.js'
+import { decrypt } from '../crypto.js'
 
 export const AuthService = {
   login(username, password) {
@@ -14,6 +15,6 @@ export const AuthService = {
     if (!valid) throw new Error('Invalid username or password')
 
     const { password_hash, ...safe } = user
-    return safe
+    return { ...safe, profile_pic: decrypt(safe.profile_pic) }
   }
 }

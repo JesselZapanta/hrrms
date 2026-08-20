@@ -1,8 +1,11 @@
 import { app, BrowserWindow, shell } from 'electron'
+import { autoUpdater } from 'electron-updater'
 import path from 'node:path'
 import { initDb, closeDb } from './db.js'
 import { registerIpc } from './ipc.js'
 import { splashDataUrl } from './splash.js'
+
+app.setName('hrrms')
 
 const isDev = !app.isPackaged
 const SPLASH_MIN_MS = 1800
@@ -93,6 +96,14 @@ function launchApp() {
 }
 
 app.whenReady().then(() => {
+  if (app.isPackaged) {
+    autoUpdater.autoDownload = true
+    autoUpdater.autoInstallOnAppQuit = true
+    autoUpdater.on('error', (err) => console.error('[updater]', err.message))
+    autoUpdater.on('update-downloaded', () => console.log('[updater] update ready, installing on quit'))
+    autoUpdater.checkForUpdates().catch(() => {})
+  }
+
   launchApp()
 
   app.on('activate', () => {

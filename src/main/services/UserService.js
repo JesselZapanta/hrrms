@@ -1,14 +1,16 @@
 import bcrypt from 'bcryptjs'
 import { getDb } from '../db.js'
+import { encrypt, decrypt } from '../crypto.js'
 
 const pickUser = (u) =>
-  u && { id: u.id, username: u.username, full_name: u.full_name, role: u.role, status: u.status, profile_pic: u.profile_pic, created_at: u.created_at }
+  u && { id: u.id, username: u.username, full_name: u.full_name, role: u.role, status: u.status, profile_pic: decrypt(u.profile_pic), created_at: u.created_at }
 
 export const UserService = {
   list() {
     return getDb()
       .prepare('SELECT id, username, full_name, role, status, profile_pic, created_at FROM users ORDER BY full_name')
       .all()
+      .map((u) => ({ ...u, profile_pic: decrypt(u.profile_pic) }))
   },
 
   create({ username, password, full_name, role, status, profile_pic }) {
@@ -24,7 +26,7 @@ export const UserService = {
         String(full_name).trim(),
         role === 'admin' ? 'admin' : 'staff',
         status === 'inactive' ? 'inactive' : 'active',
-        profile_pic ? String(profile_pic) : null
+        profile_pic ? encrypt(String(profile_pic)) : null
       )
     return this.get(result.lastInsertRowid)
   },
@@ -42,7 +44,7 @@ export const UserService = {
     if (status !== undefined) { set.push('status = ?'); params.push(status === 'active' ? 'active' : 'inactive') }
     if (profile_pic !== undefined) {
       set.push('profile_pic = ?')
-      params.push(profile_pic ? String(profile_pic) : null)
+      params.push(profile_pic ? encrypt(String(profile_pic)) : null)
     }
     if (password) {
       set.push('password_hash = ?')

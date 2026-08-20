@@ -2,14 +2,35 @@ import { getDb } from '../db.js'
 
 export const CategoryService = {
   listAll() {
-    return getDb()
+    const db = getDb()
+    return db
       .prepare('SELECT * FROM categories ORDER BY sort_order, id')
       .all()
-      .map((c) => ({ ...c, subcategories: this.listSubcategories(c.id) }))
+      .map((c) => ({
+        ...c,
+        file_count: this.categoryFileCount(c.id),
+        subcategories: this.listSubcategories(c.id)
+      }))
   },
 
   list() {
     return getDb().prepare('SELECT * FROM categories ORDER BY sort_order, id').all()
+  },
+
+  categoryFileCount(categoryId) {
+    return getDb()
+      .prepare(
+        `SELECT COUNT(*) AS c FROM files f
+         JOIN subcategories s ON s.id = f.subcategory_id
+         WHERE s.category_id = ?`
+      )
+      .get(categoryId).c
+  },
+
+  subcategoryFileCount(subcategoryId) {
+    return getDb()
+      .prepare('SELECT COUNT(*) AS c FROM files WHERE subcategory_id = ?')
+      .get(subcategoryId).c
   },
 
   create(name, sortOrder = 0) {
@@ -31,7 +52,14 @@ export const CategoryService = {
   },
 
   remove(id) {
-    const result = getDb().prepare('DELETE FROM categories WHERE id = ?').run(id)
+    const db = getDb()
+    const count = this.categoryFileCount(id)
+    if (count > 0) {
+      throw new Error(
+        `Cannot delete category: ${count} filed document${count === 1 ? ' is' : 's are'} still filed under it`
+      )
+    }
+    const result = db.prepare('DELETE FROM categories WHERE id = ?').run(id)
     return { deleted: result.changes > 0 }
   },
 
@@ -43,6 +71,7 @@ export const CategoryService = {
     return getDb()
       .prepare('SELECT * FROM subcategories WHERE category_id = ? ORDER BY sort_order, id')
       .all(categoryId)
+      .map((s) => ({ ...s, file_count: this.subcategoryFileCount(s.id) }))
   },
 
   createSubcategory(categoryId, name, sortOrder = 0) {
@@ -64,7 +93,14 @@ export const CategoryService = {
   },
 
   removeSubcategory(id) {
-    const result = getDb().prepare('DELETE FROM subcategories WHERE id = ?').run(id)
+    const db = getDb()
+    const count = this.subcategoryFileCount(id)
+    if (count > 0) {
+      throw new Error(
+        `Cannot delete subcategory: ${count} filed document${count === 1 ? ' is' : 's are'} still filed under it`
+      )
+    }
+    const result = db.prepare('DELETE FROM subcategories WHERE id = ?').run(id)
     return { deleted: result.changes > 0 }
   }
 }
