@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Modal } from './Modal.jsx'
 import Logo from './Logo.jsx'
 
@@ -24,6 +24,12 @@ const META = {
 
 export default function Layout({ user, view, onNavigate, children, onLogout }) {
   const [confirmLogout, setConfirmLogout] = useState(false)
+  const [version, setVersion] = useState('')
+  useEffect(() => {
+    window.api?.app?.version?.()
+      ?.then((res) => setVersion(res?.data ?? res ?? ''))
+      .catch(() => {})
+  }, [])
   const nav = NAV.filter(
     (item) =>
       (!item.adminOnly || user.role === 'admin') && (!item.staffOnly || user.role !== 'admin')
@@ -98,6 +104,15 @@ export default function Layout({ user, view, onNavigate, children, onLogout }) {
               <LogoutIcon />
             </button>
           </div>
+        </div>
+        <div className="flex items-center gap-1.5 px-5 pb-4">
+          <span className="font-mono text-[10px] uppercase tracking-[2px] text-paper/35">
+            v{version || '…'}
+          </span>
+          <span className="h-1 w-1 rounded-full bg-paper/25" />
+          <span className="font-mono text-[10px] uppercase tracking-[2px] text-paper/35">
+            Auto-update
+          </span>
         </div>
       </aside>
 
