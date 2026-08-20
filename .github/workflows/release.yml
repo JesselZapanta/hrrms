@@ -30,9 +30,16 @@ jobs:
         id: bump
         shell: bash
         run: |
-          npx semver -i minor $(node -p "require('./package.json').version") > /tmp/ver
-          node -e "const fs=require('fs');const p=require('./package.json');p.version=fs.readFileSync('/tmp/ver','utf8').trim();fs.writeFileSync('./package.json',JSON.stringify(p,null,2)+'\n')"
-          echo "version=$(cat /tmp/ver)" >> "$GITHUB_OUTPUT"
+          node <<'NODE'
+          const fs=require('fs');
+          const p=require('./package.json');
+          const [maj,min]=p.version.split('.').map(Number);
+          const v=`${maj}.${min+1}.0`;
+          p.version=v;
+          fs.writeFileSync('./package.json', JSON.stringify(p,null,2)+'\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `version=${v}\n`);
+          console.log(`bumped to ${v}`);
+          NODE
 
       - name: Build and publish
         env:
