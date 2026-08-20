@@ -45,6 +45,8 @@ export function initDb() {
   const schema = fs.readFileSync(schemaPath, 'utf-8')
   database.exec(schema)
 
+  migrate(database)
+
   const seeded = database
     .prepare('SELECT COUNT(*) AS count FROM categories')
     .get().count
@@ -66,5 +68,12 @@ export function closeDb() {
   if (db) {
     db.close()
     db = null
+  }
+}
+
+function migrate(database) {
+  const cols = database.prepare('PRAGMA table_info(users)').all().map((c) => c.name)
+  if (!cols.includes('profile_pic')) {
+    database.exec('ALTER TABLE users ADD COLUMN profile_pic TEXT')
   }
 }
