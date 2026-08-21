@@ -13,7 +13,7 @@ const NAV = [
 
 const META = {
   dashboard: { title: 'Dashboard', subtitle: 'Registry Overview' },
-  employees: { title: 'Employees', subtitle: '201-File Management' },
+  employees: { title: 'Employees', subtitle: 'Records Management' },
   folder: { title: 'Employee Folder', subtitle: 'Filing Documents' },
   categories: { title: 'File Categories', subtitle: 'Filing Structure' },
   offices: { title: 'Offices', subtitle: 'City Offices Directory' },

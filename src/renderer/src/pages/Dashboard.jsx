@@ -62,7 +62,7 @@ export default function Dashboard({ user, onNavigate }) {
             <p className="mt-2 max-w-md text-sm leading-relaxed text-paper/60">
               {isAdmin
                 ? 'Your filing structure and access controls are ready to manage.'
-                : 'Your 201-file registry is ready — file, update, and retrieve employee documents.'}
+                : 'Your file registry is ready — file, update, and retrieve employee documents.'}
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               {!isAdmin && (

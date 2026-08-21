@@ -32,7 +32,7 @@ export default function Login({ onLogin }) {
 
         {/* Manila-folder tab decorations */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end">
-          {['PDS', '201', 'TOR', 'IPCR'].map((t, i) => (
+          {['PDS', 'FILE', 'TOR', 'IPCR'].map((t, i) => (
             <div
               key={t}
               className="folder-tab-panel ml-2 text-center font-mono text-[10px] tracking-wider text-paper/30"
@@ -70,7 +70,7 @@ export default function Login({ onLogin }) {
             className="mt-4 max-w-sm text-sm leading-relaxed text-paper/60 animate-rise"
             style={{ animationDelay: '0.24s' }}
           >
-            The centralized 201-file registry — every employee record and
+            The centralized file registry — every employee record and
             supporting document, filed by category, ready when you are.
           </p>
         </div>
