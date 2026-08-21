@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, nativeImage } from 'electron'
+import { app, BrowserWindow, shell, nativeImage, session } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -95,19 +95,23 @@ function createMainWindow(onReady) {
 
 let mainWin = null
 
+function setSplashStatus(splash, text) {
+  if (!splash || splash.isDestroyed()) return
+  const safe = String(text).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/`/g, '\\`')
+  splash.webContents.executeJavaScript(`(function(){var el=document.getElementById('splash-status'); if(el) el.textContent='${safe}';})()`).catch(() => {})
+}
+
 function setupAutoUpdater(win) {
   const send = (payload) => {
     if (!win.isDestroyed()) win.webContents.send('updater:status', payload)
   }
-  autoUpdater.autoDownload = true
-  autoUpdater.autoInstallOnAppQuit = true
+  // keep listeners for in-app banner (while app is running)
   autoUpdater.on('checking-for-update', () => send({ status: 'checking' }))
   autoUpdater.on('update-available', (info) => send({ status: 'available', version: info.version }))
   autoUpdater.on('update-not-available', () => send({ status: 'not-available' }))
   autoUpdater.on('download-progress', (p) => send({ status: 'downloading', percent: Math.round(p.percent), bytesPerSecond: p.bytesPerSecond }))
   autoUpdater.on('update-downloaded', (info) => send({ status: 'downloaded', version: info.version }))
   autoUpdater.on('error', (err) => send({ status: 'error', message: err.message }))
-  autoUpdater.checkForUpdates().catch(() => {})
 }
 
 function launchApp() {
@@ -117,6 +121,8 @@ function launchApp() {
   const splash = createSplashWindow()
   const start = Date.now()
   let revealed = false
+  let updateFlowActive = false
+  let mainCreated = false
 
   const revealMain = (win) => {
     if (revealed) return
@@ -130,8 +136,86 @@ function launchApp() {
     }, delay)
   }
 
-  mainWin = createMainWindow(revealMain)
-  if (app.isPackaged) setupAutoUpdater(mainWin)
+  const createMain = () => {
+    if (mainCreated) return
+    mainCreated = true
+    mainWin = createMainWindow(revealMain)
+    if (app.isPackaged) setupAutoUpdater(mainWin)
+  }
+
+  if (!app.isPackaged) {
+    createMain()
+    return
+  }
+
+  // Packaged: mandatory update check on splash — block app until updated
+  updateFlowActive = true
+  autoUpdater.autoDownload = true
+  autoUpdater.autoInstallOnAppQuit = false // we will quitAndInstall explicitly to force logout
+
+  let hasUpdate = false
+  let settled = false
+
+  const proceedToApp = () => {
+    if (settled) return
+    settled = true
+    updateFlowActive = false
+    createMain()
+  }
+
+  const failSafe = setTimeout(() => {
+    if (!settled && !hasUpdate) proceedToApp()
+  }, 7000)
+
+  autoUpdater.once('update-available', () => {
+    hasUpdate = true
+    setSplashStatus(splash, 'Update available — downloading…')
+  })
+
+  autoUpdater.once('update-not-available', () => {
+    clearTimeout(failSafe)
+    proceedToApp()
+  })
+
+  autoUpdater.once('download-progress', (p) => {
+    hasUpdate = true
+    setSplashStatus(splash, `Downloading update… ${Math.round(p.percent)}%`)
+  })
+
+  // Use on (not once) for progress updates after available
+  autoUpdater.on('download-progress', (p) => {
+    if (hasUpdate) setSplashStatus(splash, `Downloading update… ${Math.round(p.percent)}%`)
+  })
+
+  autoUpdater.once('update-downloaded', async () => {
+    clearTimeout(failSafe)
+    hasUpdate = true
+    setSplashStatus(splash, 'Update ready — restarting…')
+    // Force logout all users: clear localStorage for app session
+    try { await session.defaultSession.clearStorageData({ storages: ['localStorage'] }) } catch {}
+    // Small delay so user sees the status
+    setTimeout(() => autoUpdater.quitAndInstall(), 900)
+  })
+
+  autoUpdater.once('error', () => {
+    clearTimeout(failSafe)
+    if (!hasUpdate) proceedToApp()
+  })
+
+  setSplashStatus(splash, 'Checking for updates…')
+  autoUpdater.checkForUpdates().catch(() => {
+    clearTimeout(failSafe)
+    if (!hasUpdate) proceedToApp()
+  })
+
+  // If no update-available within 4.5s, assume up-to-date and show app
+  setTimeout(() => {
+    if (!hasUpdate && !settled) {
+      // still waiting for update-not-available / error — treat as no update if check is slow/offline
+      // do not proceed yet, fall back to failSafe at 7s
+      setSplashStatus(splash, 'Checking for updates…')
+    }
+  }, 4500)
 }
 
 app.whenReady().then(() => {
