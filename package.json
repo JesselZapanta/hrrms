@@ -1,6 +1,6 @@
 {
   "name": "hrrms",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Human Resource Records Management System (HRRMS) - City Council Office, LGU Ozamiz",
   "main": "./out/main/index.js",
   "author": "City Council Office - LGU Ozamiz",
