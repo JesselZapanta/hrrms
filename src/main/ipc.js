@@ -19,6 +19,15 @@ const wrap = (fn) => async (_event, ...args) => {
 export function registerIpc() {
   // App
   ipcMain.handle('app:version', wrap(() => app.getVersion()))
+  ipcMain.handle('app:checkForUpdates', async () => {
+    const { autoUpdater } = await import('electron-updater')
+    return autoUpdater.checkForUpdates().catch((e) => { throw new Error(e.message) })
+  })
+  ipcMain.handle('app:quitAndInstall', () => {
+    // dynamic import to avoid loading in tests
+    import('electron-updater').then(({ autoUpdater }) => autoUpdater.quitAndInstall())
+    return true
+  })
 
   // Auth
   ipcMain.handle('auth:login', wrap((u, p) => AuthService.login(u, p)))

@@ -2,7 +2,14 @@ import { contextBridge, ipcRenderer } from 'electron'
 
 const api = {
   app: {
-    version: () => ipcRenderer.invoke('app:version')
+    version: () => ipcRenderer.invoke('app:version'),
+    checkForUpdates: () => ipcRenderer.invoke('app:checkForUpdates'),
+    quitAndInstall: () => ipcRenderer.invoke('app:quitAndInstall'),
+    onUpdateStatus: (cb) => {
+      const handler = (_, data) => cb(data)
+      ipcRenderer.on('updater:status', handler)
+      return () => ipcRenderer.removeListener('updater:status', handler)
+    }
   },
   auth: {
     login: (username, password) => ipcRenderer.invoke('auth:login', username, password)

@@ -72,6 +72,23 @@ function createMainWindow(onReady) {
   return win
 }
 
+let mainWin = null
+
+function setupAutoUpdater(win) {
+  const send = (payload) => {
+    if (!win.isDestroyed()) win.webContents.send('updater:status', payload)
+  }
+  autoUpdater.autoDownload = true
+  autoUpdater.autoInstallOnAppQuit = true
+  autoUpdater.on('checking-for-update', () => send({ status: 'checking' }))
+  autoUpdater.on('update-available', (info) => send({ status: 'available', version: info.version }))
+  autoUpdater.on('update-not-available', () => send({ status: 'not-available' }))
+  autoUpdater.on('download-progress', (p) => send({ status: 'downloading', percent: Math.round(p.percent), bytesPerSecond: p.bytesPerSecond }))
+  autoUpdater.on('update-downloaded', (info) => send({ status: 'downloaded', version: info.version }))
+  autoUpdater.on('error', (err) => send({ status: 'error', message: err.message }))
+  autoUpdater.checkForUpdates().catch(() => {})
+}
+
 function launchApp() {
   initDb()
   registerIpc()
@@ -92,18 +109,11 @@ function launchApp() {
     }, delay)
   }
 
-  createMainWindow(revealMain)
+  mainWin = createMainWindow(revealMain)
+  if (app.isPackaged) setupAutoUpdater(mainWin)
 }
 
 app.whenReady().then(() => {
-  if (app.isPackaged) {
-    autoUpdater.autoDownload = true
-    autoUpdater.autoInstallOnAppQuit = true
-    autoUpdater.on('error', (err) => console.error('[updater]', err.message))
-    autoUpdater.on('update-downloaded', () => console.log('[updater] update ready, installing on quit'))
-    autoUpdater.checkForUpdates().catch(() => {})
-  }
-
   launchApp()
 
   app.on('activate', () => {
