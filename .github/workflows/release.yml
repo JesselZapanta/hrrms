@@ -48,6 +48,11 @@ jobs:
           git tag -f v${{ steps.bump.outputs.version }}
           git push -f origin v${{ steps.bump.outputs.version }}
 
+      - name: Delete existing release if any
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete v${{ steps.bump.outputs.version }} --yes || true
+
       - name: Build and publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
