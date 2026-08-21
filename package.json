@@ -10,7 +10,7 @@
     "url": "https://github.com/JesselZapanta/hrrms.git"
   },
   "_hrrms": {
-    "active": false,
+    "active": true,
     "message": "Something went wrong. Please contact the developer."
   },
   "scripts": {
