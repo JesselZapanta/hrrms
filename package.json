@@ -49,6 +49,10 @@
       {
         "from": "database",
         "to": "database"
+      },
+      {
+        "from": "app-status.json",
+        "to": "app-status.json"
       }
     ],
     "win": {

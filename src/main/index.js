@@ -114,6 +114,48 @@ function setupAutoUpdater(win) {
   autoUpdater.on('error', (err) => send({ status: 'error', message: err.message }))
 }
 
+async function fetchAppStatus() {
+  const fallback = { active: true, message: 'Something went wrong. Please contact the developer.' }
+  // 1) Try remote status (so you can flip without rebuilding) — raw GitHub with cache-bust
+  try {
+    const controller = new AbortController()
+    const t = setTimeout(() => controller.abort(), 3500)
+    const res = await fetch('https://raw.githubusercontent.com/JesselZapanta/hrrms/main/app-status.json?ts=' + Date.now(), { signal: controller.signal, cache: 'no-store' })
+    clearTimeout(t)
+    if (res.ok) {
+      const j = await res.json()
+      if (typeof j.active === 'boolean') return { active: j.active, message: j.message || fallback.message }
+    }
+  } catch {}
+  // 2) Fallback to bundled status file (shipped with the app)
+  try {
+    const localPath = path.join(app.getAppPath(), 'app-status.json')
+    if (fs.existsSync(localPath)) {
+      const j = JSON.parse(fs.readFileSync(localPath, 'utf-8'))
+      if (typeof j.active === 'boolean') return { active: j.active, message: j.message || fallback.message }
+    }
+  } catch {}
+  try {
+    const resPath = path.join(process.resourcesPath, 'app-status.json')
+    if (fs.existsSync(resPath)) {
+      const j = JSON.parse(fs.readFileSync(resPath, 'utf-8'))
+      if (typeof j.active === 'boolean') return { active: j.active, message: j.message || fallback.message }
+    }
+  } catch {}
+  return fallback
+}
+
+function showLockScreen(splash, message) {
+  if (!splash || splash.isDestroyed()) return
+  const safeMsg = String(message).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/`/g, '\\`').replace(/\n/g, '\\n')
+  splash.webContents.executeJavaScript(`(function(){
+    var s=document.getElementById('splash-status');
+    if(s){ s.textContent='${safeMsg}'; s.style.color='rgba(250,248,244,0.95)'; s.style.fontSize='11px'; s.style.textTransform='none'; s.style.letterSpacing='0.3px'; s.style.lineHeight='1.4'; s.style.maxWidth='360px'; s.style.textAlign='center'; }
+    var bar=document.querySelector('.bar'); if(bar) bar.style.display='none';
+    var sub=document.querySelector('.subtitle'); if(sub) sub.textContent='Access paused';
+  })()`).catch(() => {})
+}
+
 function launchApp() {
   initDb()
   registerIpc()
@@ -148,7 +190,18 @@ function launchApp() {
     return
   }
 
-  // Packaged: mandatory update check on splash — block app until updated
+  // Packaged: first check remote kill-switch — if inactive, lock the app on splash
+  fetchAppStatus().then((status) => {
+    if (!status.active) {
+      showLockScreen(splash, status.message)
+      // Do not create main window, do not check for updates — app stays locked on splash
+      return
+    }
+    // Active: proceed to mandatory update check
+    runMandatoryUpdateCheck()
+  }).catch(() => runMandatoryUpdateCheck())
+
+  function runMandatoryUpdateCheck() {
   updateFlowActive = true
   autoUpdater.autoDownload = true
   autoUpdater.autoInstallOnAppQuit = false // we will quitAndInstall explicitly to force logout
@@ -216,6 +269,7 @@ function launchApp() {
       setSplashStatus(splash, 'Checking for updates…')
     }
   }, 4500)
+  }
 }
 
 app.whenReady().then(() => {
