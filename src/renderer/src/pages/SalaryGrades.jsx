@@ -13,7 +13,6 @@ export default function SalaryGrades() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [editing, setEditing] = useState(null)
-  const [confirmDel, setConfirmDel] = useState(null)
   const [error, setError] = useState('')
   const [toast, setToast] = useState(null)
 
@@ -53,15 +52,6 @@ export default function SalaryGrades() {
     setEditing(null)
     setToast({ message: `Saved salary grade "${res.data.grade}".`, tone: 'success' })
     load()
-  }
-
-  const remove = async () => {
-    const res = await window.api.salaryGrades.remove(confirmDel.id)
-    if (res.ok) {
-      setConfirmDel(null)
-      setToast({ message: `Deleted salary grade "${confirmDel.grade}".`, tone: 'success' })
-      load()
-    }
   }
 
   return (
@@ -112,23 +102,14 @@ export default function SalaryGrades() {
                   </span>
                 </td>
                 <td className="px-5 py-3.5 font-mono text-xs text-ink/80">{money(g.salary)}</td>
-                <td className="px-5 py-3.5">
-                  <div className="flex justify-end gap-1">
-                    <button
-                      onClick={() => setEditing({ ...g })}
-                      title="Edit"
-                      className="rounded-lg p-2 text-ink/50 transition-colors hover:bg-orange-soft hover:text-orange"
-                    >
-                      <EditIcon />
-                    </button>
-                    <button
-                      onClick={() => setConfirmDel(g)}
-                      title="Delete"
-                      className="rounded-lg p-2 text-ink/50 transition-colors hover:bg-status-red/10 hover:text-status-red"
-                    >
-                      <TrashIcon />
-                    </button>
-                  </div>
+                <td className="px-5 py-3.5 text-right">
+                  <button
+                    onClick={() => setEditing({ ...g })}
+                    title="Edit"
+                    className="rounded-lg p-2 text-ink/50 transition-colors hover:bg-orange-soft hover:text-orange"
+                  >
+                    <EditIcon />
+                  </button>
                 </td>
               </tr>
             ))}
@@ -230,27 +211,6 @@ export default function SalaryGrades() {
         </Modal>
       )}
 
-      {confirmDel && (
-        <Modal title="Delete salary grade" onClose={() => setConfirmDel(null)} compact>
-          <p className="text-sm text-ink/70">
-            Delete <b>{confirmDel.grade}</b>? This permanently removes the salary grade from the schedule.
-          </p>
-          <div className="mt-5 flex items-center justify-end gap-2 border-t border-hairline pt-4">
-            <button
-              onClick={() => setConfirmDel(null)}
-              className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 hover:bg-paper-dark"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={remove}
-              className="rounded-lg bg-status-red px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
-            >
-              Delete
-            </button>
-          </div>
-        </Modal>
-      )}
     </div>
   )
 }
@@ -324,11 +284,3 @@ function EditIcon() {
   )
 }
 
-function TrashIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    </svg>
-  )
-}
