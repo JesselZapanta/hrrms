@@ -25,10 +25,20 @@ const META = {
 export default function Layout({ user, view, onNavigate, children, onLogout }) {
   const [confirmLogout, setConfirmLogout] = useState(false)
   const [version, setVersion] = useState('')
+  const [updateStatus, setUpdateStatus] = useState(null)
   useEffect(() => {
     window.api?.app?.version?.()
       ?.then((res) => setVersion(res?.data ?? res ?? ''))
       .catch(() => {})
+  }, [])
+  useEffect(() => {
+    const off = window.api?.app?.onUpdateStatus?.((data) => {
+      setUpdateStatus(data)
+      if (data.status === 'not-available') {
+        setTimeout(() => setUpdateStatus(null), 3000)
+      }
+    })
+    return () => off?.()
   }, [])
   const nav = NAV.filter(
     (item) =>
@@ -118,6 +128,38 @@ export default function Layout({ user, view, onNavigate, children, onLogout }) {
 
       {/* Main */}
       <div className="flex min-w-0 flex-1 flex-col">
+        {updateStatus && updateStatus.status !== 'not-available' && (
+          <div className="flex items-center gap-3 border-b border-hairline bg-navy px-6 py-2.5 text-sm text-paper">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10">
+              {updateStatus.status === 'downloading' ? <SpinnerIcon /> : updateStatus.status === 'downloaded' ? <CheckIconSmall /> : <DownloadIcon />}
+            </span>
+            <span className="flex-1 font-medium">
+              {updateStatus.status === 'checking' && 'Checking for updates…'}
+              {updateStatus.status === 'available' && `Update ${updateStatus.version} available — downloading…`}
+              {updateStatus.status === 'downloading' && `Downloading update… ${updateStatus.percent}%`}
+              {updateStatus.status === 'downloaded' && `Update ${updateStatus.version} ready — restart to install`}
+              {updateStatus.status === 'error' && `Update error: ${updateStatus.message}`}
+            </span>
+            {updateStatus.status === 'downloading' && (
+              <span className="h-1.5 w-24 overflow-hidden rounded-full bg-white/15">
+                <span className="block h-full bg-orange transition-all" style={{ width: `${updateStatus.percent}%` }} />
+              </span>
+            )}
+            {updateStatus.status === 'downloaded' && (
+              <button
+                onClick={() => window.api?.app?.quitAndInstall?.()}
+                className="rounded-lg bg-orange px-3 py-1.5 text-xs font-semibold text-white hover:bg-orange/90"
+              >
+                Restart to install
+              </button>
+            )}
+            {updateStatus.status === 'error' && (
+              <button onClick={() => setUpdateStatus(null)} className="text-paper/60 hover:text-paper">
+                <CloseIconSmall />
+              </button>
+            )}
+          </div>
+        )}
         <header className="flex items-center justify-between border-b border-hairline bg-paper/80 px-8 py-4 backdrop-blur">
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[2px] text-ink/40">
@@ -291,6 +333,42 @@ function LogoutIcon() {
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
       <polyline points="16 17 21 12 16 7" />
       <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+  )
+}
+
+function DownloadIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  )
+}
+
+function SpinnerIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="animate-spin">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-30" />
+      <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function CheckIconSmall() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  )
+}
+
+function CloseIconSmall() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   )
 }
