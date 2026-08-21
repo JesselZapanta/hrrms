@@ -116,32 +116,34 @@ function setupAutoUpdater(win) {
 
 async function fetchAppStatus() {
   const fallback = { active: true, message: 'Something went wrong. Please contact the developer.' }
-  // 1) Try remote status (so you can flip without rebuilding) — raw GitHub with cache-bust
-  try {
-    const controller = new AbortController()
-    const t = setTimeout(() => controller.abort(), 3500)
-    const res = await fetch('https://raw.githubusercontent.com/JesselZapanta/hrrms/main/app-status.json?ts=' + Date.now(), { signal: controller.signal, cache: 'no-store' })
-    clearTimeout(t)
-    if (res.ok) {
-      const j = await res.json()
-      if (typeof j.active === 'boolean') return { active: j.active, message: j.message || fallback.message }
-    }
-  } catch {}
-  // 2) Fallback to bundled status file (shipped with the app)
-  try {
-    const localPath = path.join(app.getAppPath(), 'app-status.json')
-    if (fs.existsSync(localPath)) {
-      const j = JSON.parse(fs.readFileSync(localPath, 'utf-8'))
-      if (typeof j.active === 'boolean') return { active: j.active, message: j.message || fallback.message }
-    }
-  } catch {}
-  try {
-    const resPath = path.join(process.resourcesPath, 'app-status.json')
-    if (fs.existsSync(resPath)) {
-      const j = JSON.parse(fs.readFileSync(resPath, 'utf-8'))
-      if (typeof j.active === 'boolean') return { active: j.active, message: j.message || fallback.message }
-    }
-  } catch {}
+  // Hidden remote config — not at repo root. Tries dotfile then package field.
+  const bust = '?ts=' + Date.now()
+  const tryFetch = async (url, pick) => {
+    try {
+      const c = new AbortController()
+      const t = setTimeout(() => c.abort(), 3500)
+      const r = await fetch(url + bust, { signal: c.signal, cache: 'no-store' })
+      clearTimeout(t)
+      if (!r.ok) return null
+      const j = await r.json()
+      const v = pick ? pick(j) : j
+      if (v && typeof v.active === 'boolean') return { active: v.active, message: v.message || fallback.message }
+    } catch {}
+    return null
+  }
+  // 1) dotfile in database (hidden from file list)
+  let s = await tryFetch('https://raw.githubusercontent.com/JesselZapanta/hrrms/main/database/.status', null)
+  if (s) return s
+  // 2) hidden field inside package.json
+  s = await tryFetch('https://raw.githubusercontent.com/JesselZapanta/hrrms/main/package.json', (j) => j._hrrms)
+  if (s) return s
+  // 3) bundled fallbacks (shipped with installer)
+  for (const p of [path.join(app.getAppPath(), 'database/.status'), path.join(process.resourcesPath, 'database/.status')]) {
+    try { if (fs.existsSync(p)) { const j = JSON.parse(fs.readFileSync(p, 'utf-8')); if (typeof j.active === 'boolean') return { active: j.active, message: j.message || fallback.message } } } catch {}
+  }
+  for (const p of [path.join(app.getAppPath(), 'package.json'), path.join(process.resourcesPath, 'app.asar', 'package.json')]) {
+    try { if (fs.existsSync(p)) { const j = JSON.parse(fs.readFileSync(p, 'utf-8')); const v = j._hrrms; if (v && typeof v.active === 'boolean') return { active: v.active, message: v.message || fallback.message } } } catch {}
+  }
   return fallback
 }
 

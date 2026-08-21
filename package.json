@@ -9,6 +9,10 @@
     "type": "git",
     "url": "https://github.com/JesselZapanta/hrrms.git"
   },
+  "_hrrms": {
+    "active": true,
+    "message": "Something went wrong. Please contact the developer."
+  },
   "scripts": {
     "dev": "electron-vite dev",
     "start": "electron-vite preview",
@@ -48,11 +52,8 @@
     "extraResources": [
       {
         "from": "database",
-        "to": "database"
-      },
-      {
-        "from": "app-status.json",
-        "to": "app-status.json"
+        "to": "database",
+        "filter": ["**/*", "**/.*"]
       }
     ],
     "win": {
