@@ -11,6 +11,8 @@ export default function Offices() {
   const [offices, setOffices] = useState([])
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [sortBy, setSortBy] = useState('id')
+  const [sortDir, setSortDir] = useState('desc')
   const [page, setPage] = useState(1)
   const [editing, setEditing] = useState(null)
   const [confirmDel, setConfirmDel] = useState(null)
@@ -32,9 +34,22 @@ export default function Offices() {
   }, [search, statusFilter])
 
   const filtered = useMemo(() => {
-    if (statusFilter === 'all') return offices
-    return offices.filter((o) => o.status === statusFilter)
-  }, [offices, statusFilter])
+    const base = statusFilter === 'all' ? offices : offices.filter((o) => o.status === statusFilter)
+    return [...base].sort((a, b) => {
+      const av = a[sortBy], bv = b[sortBy]
+      if (av == null && bv == null) return 0
+      if (av == null) return 1
+      if (bv == null) return -1
+      if (typeof av === 'number' && typeof bv === 'number') return sortDir === 'asc' ? av - bv : bv - av
+      const cmp = String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' })
+      return sortDir === 'asc' ? cmp : -cmp
+    })
+  }, [offices, statusFilter, sortBy, sortDir])
+
+  const toggleSort = (col) => {
+    if (sortBy === col) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    else { setSortBy(col); setSortDir(col === 'id' ? 'desc' : 'asc') }
+  }
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const safePage = Math.min(page, totalPages)
@@ -119,6 +134,9 @@ export default function Offices() {
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-hairline bg-navy/[0.04] font-mono text-[10px] uppercase tracking-[1.5px] text-ink/45">
+              <th className="w-14 cursor-pointer select-none px-5 py-3.5 hover:text-ink" onClick={() => toggleSort('id')}>
+                <span className="inline-flex items-center gap-1">ID {sortBy === 'id' && <SortArrow dir={sortDir} />}</span>
+              </th>
               <th className="px-5 py-3.5">Name</th>
               <th className="px-5 py-3.5">Description</th>
               <th className="px-5 py-3.5">Status</th>
@@ -128,6 +146,7 @@ export default function Offices() {
           <tbody className="divide-y divide-hairline">
             {pageRows.map((office) => (
               <tr key={office.id} className="group transition-colors hover:bg-paper/70">
+                <td className="px-5 py-3.5 font-mono text-xs text-ink/60">#{office.id}</td>
                 <td className="px-5 py-3.5">
                   <span className="font-medium text-ink">{office.name}</span>
                 </td>
@@ -164,7 +183,7 @@ export default function Offices() {
             ))}
             {pageRows.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-5 py-14 text-center text-sm text-ink/40">
+                <td colSpan={5} className="px-5 py-14 text-center text-sm text-ink/40">
                   {offices.length === 0 ? 'No offices yet. Add your first office.' : 'No offices match your filters.'}
                 </td>
               </tr>
@@ -376,6 +395,14 @@ function TrashIcon() {
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="3 6 5 6 21 6" />
       <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  )
+}
+
+function SortArrow({ dir }) {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={dir === 'asc' ? 'rotate-180' : ''}>
+      <polyline points="6 9 12 15 18 9" />
     </svg>
   )
 }

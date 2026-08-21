@@ -12,6 +12,8 @@ export default function Users({ currentUser }) {
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [sortBy, setSortBy] = useState('id')
+  const [sortDir, setSortDir] = useState('desc')
   const [page, setPage] = useState(1)
   const [editing, setEditing] = useState(null)
   const [confirmDel, setConfirmDel] = useState(null)
@@ -35,13 +37,27 @@ export default function Users({ currentUser }) {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
-    return users.filter((u) => {
+    const base = users.filter((u) => {
       if (q && !`${u.full_name} ${u.username} ${u.role} #${u.id}`.toLowerCase().includes(q)) return false
       if (roleFilter !== 'all' && u.role !== roleFilter) return false
       if (statusFilter !== 'all' && u.status !== statusFilter) return false
       return true
     })
-  }, [users, search, roleFilter, statusFilter])
+    return [...base].sort((a, b) => {
+      const av = a[sortBy], bv = b[sortBy]
+      if (av == null && bv == null) return 0
+      if (av == null) return 1
+      if (bv == null) return -1
+      if (typeof av === 'number' && typeof bv === 'number') return sortDir === 'asc' ? av - bv : bv - av
+      const cmp = String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' })
+      return sortDir === 'asc' ? cmp : -cmp
+    })
+  }, [users, search, roleFilter, statusFilter, sortBy, sortDir])
+
+  const toggleSort = (col) => {
+    if (sortBy === col) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    else { setSortBy(col); setSortDir(col === 'id' ? 'desc' : 'asc') }
+  }
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const safePage = Math.min(page, totalPages)
@@ -161,7 +177,9 @@ export default function Users({ currentUser }) {
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-hairline bg-navy/[0.04] font-mono text-[10px] uppercase tracking-[1.5px] text-ink/45">
-              <th className="w-14 px-5 py-3.5">ID</th>
+              <th className="w-14 cursor-pointer select-none px-5 py-3.5 hover:text-ink" onClick={() => toggleSort('id')}>
+                <span className="inline-flex items-center gap-1">ID {sortBy === 'id' && <SortArrow dir={sortDir} />}</span>
+              </th>
               <th className="px-5 py-3.5">User</th>
               <th className="px-5 py-3.5">Role</th>
               <th className="px-5 py-3.5">Status</th>
@@ -651,6 +669,14 @@ function SaveIcon() {
       <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
       <polyline points="17 21 17 13 7 13 7 21" />
       <polyline points="7 3 7 8 15 8" />
+    </svg>
+  )
+}
+
+function SortArrow({ dir }) {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={dir === 'asc' ? 'rotate-180' : ''}>
+      <polyline points="6 9 12 15 18 9" />
     </svg>
   )
 }

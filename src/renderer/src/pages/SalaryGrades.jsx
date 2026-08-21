@@ -11,6 +11,8 @@ const money = (n) =>
 export default function SalaryGrades() {
   const [grades, setGrades] = useState([])
   const [search, setSearch] = useState('')
+  const [sortBy, setSortBy] = useState('id')
+  const [sortDir, setSortDir] = useState('desc')
   const [page, setPage] = useState(1)
   const [editing, setEditing] = useState(null)
   const [error, setError] = useState('')
@@ -30,7 +32,22 @@ export default function SalaryGrades() {
     setPage(1)
   }, [search])
 
-  const filtered = useMemo(() => grades, [grades])
+  const filtered = useMemo(() => {
+    return [...grades].sort((a, b) => {
+      const av = a[sortBy], bv = b[sortBy]
+      if (av == null && bv == null) return 0
+      if (av == null) return 1
+      if (bv == null) return -1
+      if (typeof av === 'number' && typeof bv === 'number') return sortDir === 'asc' ? av - bv : bv - av
+      const cmp = String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' })
+      return sortDir === 'asc' ? cmp : -cmp
+    })
+  }, [grades, sortBy, sortDir])
+
+  const toggleSort = (col) => {
+    if (sortBy === col) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    else { setSortBy(col); setSortDir(col === 'id' ? 'desc' : 'asc') }
+  }
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const safePage = Math.min(page, totalPages)
@@ -88,6 +105,9 @@ export default function SalaryGrades() {
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-hairline bg-navy/[0.04] font-mono text-[10px] uppercase tracking-[1.5px] text-ink/45">
+              <th className="w-14 cursor-pointer select-none px-5 py-3.5 hover:text-ink" onClick={() => toggleSort('id')}>
+                <span className="inline-flex items-center gap-1">ID {sortBy === 'id' && <SortArrow dir={sortDir} />}</span>
+              </th>
               <th className="px-5 py-3.5">Salary Grade</th>
               <th className="px-5 py-3.5">Salary (Monthly)</th>
               <th className="px-5 py-3.5 text-right">Actions</th>
@@ -96,6 +116,7 @@ export default function SalaryGrades() {
           <tbody className="divide-y divide-hairline">
             {pageRows.map((g) => (
               <tr key={g.id} className="group transition-colors hover:bg-paper/70">
+                <td className="px-5 py-3.5 font-mono text-xs text-ink/60">#{g.id}</td>
                 <td className="px-5 py-3.5">
                   <span className="inline-flex items-center rounded-lg bg-navy/5 px-2.5 py-1 font-heading text-sm font-semibold text-navy">
                     {g.grade}
@@ -115,7 +136,7 @@ export default function SalaryGrades() {
             ))}
             {pageRows.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-5 py-14 text-center text-sm text-ink/40">
+                <td colSpan={4} className="px-5 py-14 text-center text-sm text-ink/40">
                   {grades.length === 0 ? 'No salary grades yet. Add your first salary grade.' : 'No salary grades match your search.'}
                 </td>
               </tr>
@@ -280,6 +301,14 @@ function EditIcon() {
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  )
+}
+
+function SortArrow({ dir }) {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={dir === 'asc' ? 'rotate-180' : ''}>
+      <polyline points="6 9 12 15 18 9" />
     </svg>
   )
 }
