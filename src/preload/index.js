@@ -58,7 +58,8 @@ const api = {
     openPath: (id) => ipcRenderer.invoke('files:openPath', id)
   },
   dialog: {
-    pickPdf: () => ipcRenderer.invoke('dialog:pickPdf')
+    pickPdf: () => ipcRenderer.invoke('dialog:pickPdf'),
+    pickFile: () => ipcRenderer.invoke('dialog:pickFile')
   }
 }
 

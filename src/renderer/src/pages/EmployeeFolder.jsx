@@ -49,7 +49,7 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
 
   const handleUpload = async (subcategoryId) => {
     setUploading(true)
-    const picked = await window.api.dialog.pickPdf()
+    const picked = await (window.api.dialog.pickFile?.() ?? window.api.dialog.pickPdf())
     if (picked && picked.ok && picked.data) {
       const res = await window.api.files.uploadFromPath({
         employee_id: employee.id,
@@ -60,6 +60,8 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
       if (res.ok) {
         setToast({ message: `Filed "${res.data.file_name}".`, tone: 'success' })
         loadFiles()
+      } else if (res.error) {
+        setToast({ message: res.error, tone: 'error' })
       }
     }
     setUploading(false)
@@ -218,9 +220,7 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
                   <ul className="divide-y divide-hairline">
                     {list.map((f) => (
                       <li key={f.id} className="group flex items-center gap-4 px-5 py-3 transition-colors hover:bg-paper/60">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-status-red/10 text-status-red">
-                          <PdfIcon />
-                        </span>
+                        <FileTypeIcon fileName={f.file_name} />
                         <button
                           className="min-w-0 flex-1 text-left"
                           onClick={() => window.api.files.openPath(f.id)}
@@ -503,6 +503,44 @@ function PdfIcon() {
       <line x1="8" y1="9" x2="10" y2="9" />
     </svg>
   )
+}
+
+function WordIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <path d="M8 13l2 5 2-5M12 13l2 5 2-5" />
+    </svg>
+  )
+}
+
+function ExcelIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <path d="M8 13h8M8 17h8M9 13l3 4 3-4" />
+    </svg>
+  )
+}
+
+function PptIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <rect x="8" y="13" width="8" height="4" rx="1" />
+    </svg>
+  )
+}
+
+function FileTypeIcon({ fileName }) {
+  const ext = String(fileName || '').split('.').pop()?.toLowerCase() || ''
+  if (['doc', 'docx'].includes(ext)) return <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy/10 text-navy"><WordIcon /></span>
+  if (['xls', 'xlsx'].includes(ext)) return <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-status-green/10 text-status-green"><ExcelIcon /></span>
+  if (['ppt', 'pptx'].includes(ext)) return <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-status-amber/10 text-status-amber"><PptIcon /></span>
+  return <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-status-red/10 text-status-red"><PdfIcon /></span>
 }
 
 function OpenIcon() {
