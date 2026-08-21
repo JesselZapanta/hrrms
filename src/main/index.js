@@ -1,11 +1,30 @@
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, shell, nativeImage } from 'electron'
 import { autoUpdater } from 'electron-updater'
+import fs from 'node:fs'
 import path from 'node:path'
 import { initDb, closeDb } from './db.js'
 import { registerIpc } from './ipc.js'
 import { splashDataUrl } from './splash.js'
 
 app.setName('hrrms')
+
+function getIconPath() {
+  const candidates = [
+    path.join(app.getAppPath(), 'build/icon.png'),
+    path.join(process.resourcesPath, 'build/icon.png'),
+    path.join(process.resourcesPath, 'app.asar', 'build/icon.png')
+  ]
+  for (const p of candidates) {
+    try { if (fs.existsSync(p)) return p } catch {}
+  }
+  return undefined
+}
+
+function getWindowIcon() {
+  const p = getIconPath()
+  if (!p) return undefined
+  try { return nativeImage.createFromPath(p) } catch { return undefined }
+}
 
 const isDev = !app.isPackaged
 const SPLASH_MIN_MS = 1800
@@ -22,6 +41,7 @@ function createSplashWindow() {
     alwaysOnTop: true,
     show: false,
     backgroundColor: '#1B2C63',
+    icon: getWindowIcon(),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -46,6 +66,7 @@ function createMainWindow(onReady) {
     backgroundColor: '#FAF8F4',
     autoHideMenuBar: true,
     show: false,
+    icon: getWindowIcon(),
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: true,

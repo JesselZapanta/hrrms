@@ -33,12 +33,13 @@ export const SPLASH_HTML = `<!doctype html>
   .mark {
     width: 64px; height: 64px;
     border-radius: 14px;
-    background: #e85b18;
+    background: linear-gradient(135deg, #1B2C63 0%, #14214b 100%);
+    border: 1px solid rgba(255,255,255,0.15);
     display: flex; align-items: center; justify-content: center;
-    font-size: 30px; font-weight: 700; color: #fff;
-    box-shadow: 0 8px 24px rgba(232,91,24,.35);
+    box-shadow: 0 8px 24px rgba(27,44,99,.35);
     animation: pop .5s cubic-bezier(.2,.9,.3,1.2) both;
   }
+  .mark svg { width: 38px; height: 38px; }
   .title { margin-top: 18px; font-size: 30px; font-weight: 700; letter-spacing: .5px; animation: rise .55s ease .08s both; }
   .subtitle {
     margin-top: 6px; font-family: 'IBM Plex Mono', monospace;
@@ -64,7 +65,7 @@ export const SPLASH_HTML = `<!doctype html>
   <div class="glow glow-a"></div>
   <div class="glow glow-b"></div>
   <div class="wrap">
-    <div class="mark">A</div>
+    <div class="mark"><svg viewBox="0 0 48 48" fill="none"><path d="M6 15.5A4.5 4.5 0 0 1 10.5 11h8.2l3.2 4.4H37.5A4.5 4.5 0 0 1 42 19.9V34a4.5 4.5 0 0 1-4.5 4.5h-27A4.5 4.5 0 0 1 6 34v-18.5z" fill="#E85B18"/><circle cx="24" cy="23.5" r="6" fill="#fff"/><path d="M14.5 36.5c0-5.6 4.2-9 9.5-9s9.5 3.4 9.5 9" fill="#fff"/></svg></div>
     <div class="title">HRRMS</div>
     <div class="subtitle">Human Resource Records Management System</div>
     <div class="bar"><div class="bar-fill"></div></div>
