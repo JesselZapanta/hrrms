@@ -80,8 +80,23 @@ export function registerIpc() {
   // Dialogs
   ipcMain.handle('dialog:pickPdf', wrap(async () => {
     const res = await dialog.showOpenDialog({
-      title: 'Select PDF file',
-      filters: [{ name: 'PDF Documents', extensions: ['pdf'] }],
+      title: 'Select document',
+      filters: [
+        { name: 'Documents', extensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'] },
+        { name: 'All Files', extensions: ['*'] }
+      ],
+      properties: ['openFile']
+    })
+    if (res.canceled || res.filePaths.length === 0) return null
+    return res.filePaths[0]
+  }))
+  ipcMain.handle('dialog:pickFile', wrap(async () => {
+    const res = await dialog.showOpenDialog({
+      title: 'Select document',
+      filters: [
+        { name: 'Documents', extensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'] },
+        { name: 'All Files', extensions: ['*'] }
+      ],
       properties: ['openFile']
     })
     if (res.canceled || res.filePaths.length === 0) return null
