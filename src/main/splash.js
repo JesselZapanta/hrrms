@@ -51,6 +51,11 @@ export const SPLASH_HTML = `<!doctype html>
     background: rgba(250,248,244,.14); overflow: hidden; animation: rise .55s ease .24s both;
   }
   .bar-fill { height: 100%; width: 40%; border-radius: 999px; background: #e85b18; animation: load 1.3s ease-in-out infinite; }
+  #splash-status {
+    margin-top: 14px; font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase;
+    color: rgba(250,248,244,.7); min-height: 14px;
+  }
   .footer {
     position: absolute; bottom: 20px; width: 100%; text-align: center;
     font-family: 'IBM Plex Mono', monospace; font-size: 10px;
@@ -69,6 +74,7 @@ export const SPLASH_HTML = `<!doctype html>
     <div class="title">HRRMS</div>
     <div class="subtitle">Human Resource Records Management System</div>
     <div class="bar"><div class="bar-fill"></div></div>
+    <div id="splash-status"></div>
   </div>
   <div class="footer">City Council Office &middot; LGU Ozamiz</div>
 </body>
