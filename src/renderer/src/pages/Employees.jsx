@@ -18,19 +18,21 @@ export default function Employees({ onOpenFolder }) {
   const [salaryGrades, setSalaryGrades] = useState([])
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [sortBy, setSortBy] = useState('id')
+  const [sortDir, setSortDir] = useState('desc')
   const [page, setPage] = useState(1)
   const [editing, setEditing] = useState(null)
   const [error, setError] = useState('')
   const [toast, setToast] = useState(null)
   const fileRef = useRef(null)
 
-  const load = async () => {
-    const res = await window.api.employees.list({ search })
+  const load = async (q = search) => {
+    const res = await window.api.employees.list({ search: q })
     if (res.ok) setEmployees(res.data)
   }
 
   useEffect(() => {
-    load()
+    load('')
     ;(async () => {
       const [o, g] = await Promise.all([
         window.api.offices.list({}),
@@ -42,14 +44,35 @@ export default function Employees({ onOpenFolder }) {
   }, [])
 
   useEffect(() => {
+    const t = setTimeout(() => load(search), 250)
+    return () => clearTimeout(t)
+  }, [search])
+
+  useEffect(() => {
     setPage(1)
   }, [search, statusFilter])
 
   const filtered = useMemo(() => {
-    if (statusFilter === 'inactive') return employees.filter((e) => e.status === 'inactive')
-    if (statusFilter === 'all') return employees.filter((e) => e.status !== 'inactive')
-    return employees.filter((e) => e.status === statusFilter)
-  }, [employees, statusFilter])
+    let base
+    if (statusFilter === 'inactive') base = employees.filter((e) => e.status === 'inactive')
+    else if (statusFilter === 'all') base = employees.filter((e) => e.status !== 'inactive')
+    else base = employees.filter((e) => e.status === statusFilter)
+    const sorted = [...base].sort((a, b) => {
+      const av = a[sortBy], bv = b[sortBy]
+      if (av == null && bv == null) return 0
+      if (av == null) return 1
+      if (bv == null) return -1
+      if (typeof av === 'number' && typeof bv === 'number') return sortDir === 'asc' ? av - bv : bv - av
+      const cmp = String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' })
+      return sortDir === 'asc' ? cmp : -cmp
+    })
+    return sorted
+  }, [employees, statusFilter, sortBy, sortDir])
+
+  const toggleSort = (col) => {
+    if (sortBy === col) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    else { setSortBy(col); setSortDir(col === 'id' ? 'desc' : 'asc') }
+  }
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const safePage = Math.min(page, totalPages)
@@ -136,6 +159,9 @@ export default function Employees({ onOpenFolder }) {
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-hairline bg-navy/[0.04] font-mono text-[10px] uppercase tracking-[1.5px] text-ink/45">
+              <th className="cursor-pointer select-none px-5 py-3.5 hover:text-ink" onClick={() => toggleSort('id')}>
+                <span className="inline-flex items-center gap-1">ID {sortBy === 'id' && <SortArrow dir={sortDir} />}</span>
+              </th>
               <th className="px-5 py-3.5">Employee</th>
               <th className="px-5 py-3.5">Office</th>
               <th className="px-5 py-3.5">Employment Status</th>
@@ -146,6 +172,7 @@ export default function Employees({ onOpenFolder }) {
           <tbody className="divide-y divide-hairline">
             {pageRows.map((emp) => (
               <tr key={emp.id} className="group transition-colors hover:bg-paper/70">
+                <td className="px-5 py-3.5 font-mono text-xs text-ink/60">#{emp.id}</td>
                 <td className="px-5 py-3.5">
                   <div className="flex items-center gap-3.5">
                     <Avatar emp={emp} />
@@ -153,7 +180,7 @@ export default function Employees({ onOpenFolder }) {
                       <button
                         onClick={() => onOpenFolder(emp)}
                         className="block max-w-52 truncate text-left font-medium text-ink transition-colors hover:text-orange"
-                        title="Open 201 folder"
+                        title="Open folder"
                       >
                         {emp.complete_name}
                       </button>
@@ -179,7 +206,7 @@ export default function Employees({ onOpenFolder }) {
                   <div className="flex justify-end gap-1">
                     <button
                       onClick={() => onOpenFolder(emp)}
-                      title="Open 201 folder"
+                      title="Open folder"
                       className="rounded-lg p-2 text-ink/50 transition-colors hover:bg-navy/5 hover:text-navy"
                     >
                       <FolderIcon />
@@ -197,7 +224,7 @@ export default function Employees({ onOpenFolder }) {
             ))}
             {pageRows.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-14 text-center text-sm text-ink/40">
+                <td colSpan={6} className="px-5 py-14 text-center text-sm text-ink/40">
                   {employees.length === 0 ? 'No employee records yet.' : 'No employees match your filters.'}
                 </td>
               </tr>
@@ -574,6 +601,14 @@ function EditIcon() {
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  )
+}
+
+function SortArrow({ dir }) {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={dir === 'asc' ? 'rotate-180' : ''}>
+      <polyline points="6 9 12 15 18 9" />
     </svg>
   )
 }
