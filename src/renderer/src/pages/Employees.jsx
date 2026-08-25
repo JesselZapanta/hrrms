@@ -439,15 +439,9 @@ export default function Employees({ onOpenFolder, currentUser }) {
                       return Array.from(m.values()).map((g) => ({ grade: g.grade, minSalary: g.salary, maxSalary: g.salary, count: 1 }))
                     })()).map((g) => ({
                       value: g.grade,
-                      label: `${g.grade} — ${new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(g.minSalary) || 0)}${g.maxSalary !== g.minSalary ? ` – ${new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(g.maxSalary) || 0)}` : ''} · ${g.count} step(s)`,
+                      label: g.grade,
                     }))}
                   />
-                  {editing.salary_grade && (() => {
-                    const g = salaryGroups.find((x) => x.grade === editing.salary_grade)
-                    if (!g) return null
-                    const max = g.gradeNum === 33 ? 2 : 8
-                    return <p className="mt-1 font-mono text-[10px] text-ink/40">{g.minSalary !== g.maxSalary ? `${money(g.minSalary)} – ${money(g.maxSalary)}` : money(g.minSalary)} · {g.count}/{max} steps</p>
-                  })()}
                 </Field>
                 <Field label="SG Step">
                   <Select
