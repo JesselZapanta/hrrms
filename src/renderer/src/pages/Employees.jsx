@@ -25,6 +25,7 @@ export default function Employees({ onOpenFolder }) {
   const [sortDir, setSortDir] = useState('desc')
   const [page, setPage] = useState(1)
   const [editing, setEditing] = useState(null)
+  const [confirmDel, setConfirmDel] = useState(null)
   const [error, setError] = useState('')
   const [toast, setToast] = useState(null)
   const fileRef = useRef(null)
@@ -99,6 +100,18 @@ export default function Employees({ onOpenFolder }) {
     setEditing(null)
     setToast({ message: `Saved employee "${res.data.complete_name}".`, tone: 'success' })
     load()
+  }
+
+  const remove = async () => {
+    const res = await window.api.employees.remove(confirmDel.id)
+    if (res.ok) {
+      setConfirmDel(null)
+      setToast({ message: `Deleted employee "${confirmDel.complete_name}".`, tone: 'success' })
+      load()
+    } else if (res.error) {
+      setToast({ message: res.error, tone: 'error' })
+      setConfirmDel(null)
+    }
   }
 
   const handlePic = (e) => {
@@ -222,6 +235,13 @@ export default function Employees({ onOpenFolder }) {
                       className="rounded-lg p-2 text-ink/50 transition-colors hover:bg-orange-soft hover:text-orange"
                     >
                       <EditIcon />
+                    </button>
+                    <button
+                      onClick={() => setConfirmDel(emp)}
+                      title="Delete"
+                      className="rounded-lg p-2 text-ink/50 transition-colors hover:bg-status-red/10 hover:text-status-red"
+                    >
+                      <TrashIcon />
                     </button>
                   </div>
                 </td>
@@ -504,6 +524,36 @@ export default function Employees({ onOpenFolder }) {
           </form>
         </Modal>
       )}
+
+      {confirmDel && (
+        <Modal title="Delete employee" onClose={() => setConfirmDel(null)} compact>
+          <div className="flex items-center gap-4">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-status-red/10 text-status-red">
+              <TrashIcon />
+            </span>
+            <div>
+              <div className="text-sm font-semibold text-ink">Delete {confirmDel.complete_name}?</div>
+              <p className="mt-0.5 text-xs text-ink/50">
+                <b>{confirmDel.record_no}</b> and all filed documents will be removed. This cannot be undone.
+              </p>
+            </div>
+          </div>
+          <div className="mt-5 flex items-center justify-end gap-2 border-t border-hairline pt-4">
+            <button
+              onClick={() => setConfirmDel(null)}
+              className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 transition-colors hover:bg-paper-dark"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={remove}
+              className="rounded-lg bg-status-red px-4 py-2 text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-[.98]"
+            >
+              Delete
+            </button>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }
@@ -648,6 +698,15 @@ function EditIcon() {
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  )
+}
+
+function TrashIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
     </svg>
   )
 }
