@@ -87,6 +87,7 @@ export const SalaryGradeService = {
       const num = m ? Number(m[1]) : 999
       const expected = num === 33 ? 2 : 8
       out.push({
+        id: Math.min(...steps.map((s) => s.id)),
         grade,
         gradeNum: Number.isFinite(num) ? num : 999,
         steps,
