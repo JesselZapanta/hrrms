@@ -67,8 +67,8 @@ export default function App() {
     <Layout user={user} view={view} onNavigate={setView} onLogout={logout}>
       {view === 'dashboard' && <Dashboard user={user} onNavigate={setView} />}
       {view === 'profile' && <Profile currentUser={user} onUserChange={handleUserChange} />}
-      {view === 'employees' && user.role !== 'admin' && <Employees onOpenFolder={openFolder} />}
-      {view === 'folder' && user.role !== 'admin' && folderEmployee && (
+      {view === 'employees' && <Employees onOpenFolder={openFolder} />}
+      {view === 'folder' && folderEmployee && (
         <EmployeeFolder
           employee={folderEmployee}
           categories={categories}

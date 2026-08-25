@@ -5,7 +5,7 @@ import Logo from './Logo.jsx'
 const NAV = [
   { key: 'dashboard', label: 'Dashboard', icon: <DashIcon /> },
   { key: 'users', label: 'User Management', icon: <UsersIcon />, adminOnly: true },
-  { key: 'employees', label: 'Employees', icon: <FolderIcon />, staffOnly: true },
+  { key: 'employees', label: 'Employees', icon: <FolderIcon /> },
   { key: 'categories', label: 'File Categories', icon: <LayersIcon /> },
   { key: 'offices', label: 'Offices', icon: <BuildingIcon />, adminOnly: true },
   { key: 'salaryGrades', label: 'Salary Grades', icon: <MoneyIcon />, adminOnly: true }
