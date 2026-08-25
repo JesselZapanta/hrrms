@@ -18,7 +18,8 @@ const moneyCompact = (n) => new Intl.NumberFormat('en-PH').format(Number(n) || 0
 export default function SalaryGrades() {
   const [grouped, setGrouped] = useState([])
   const [search, setSearch] = useState('')
-  const [sortDir, setSortDir] = useState('asc')
+  const [sortBy, setSortBy] = useState('id')
+  const [sortDir, setSortDir] = useState('desc')
   const [page, setPage] = useState(1)
   const [editing, setEditing] = useState(null) // {id, grade, step, salary}
   const [bulk, setBulk] = useState(null) // { grade, steps: {1: salary,...} }
@@ -43,9 +44,22 @@ export default function SalaryGrades() {
 
   const sorted = useMemo(() => {
     const arr = [...grouped]
-    arr.sort((a, b) => (sortDir === 'asc' ? a.gradeNum - b.gradeNum : b.gradeNum - a.gradeNum))
+    arr.sort((a, b) => {
+      const av = a[sortBy], bv = b[sortBy]
+      if (av == null && bv == null) return 0
+      if (av == null) return 1
+      if (bv == null) return -1
+      if (typeof av === 'number' && typeof bv === 'number') return sortDir === 'asc' ? av - bv : bv - av
+      const cmp = String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' })
+      return sortDir === 'asc' ? cmp : -cmp
+    })
     return arr
-  }, [grouped, sortDir])
+  }, [grouped, sortBy, sortDir])
+
+  const toggleSort = (col) => {
+    if (sortBy === col) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    else { setSortBy(col); setSortDir(col === 'id' ? 'desc' : 'asc') }
+  }
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
   const safePage = Math.min(page, totalPages)
@@ -185,8 +199,11 @@ export default function SalaryGrades() {
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-hairline bg-navy/[0.04] font-mono text-[10px] uppercase tracking-[1.5px] text-ink/45">
-                <th className="sticky left-0 z-10 cursor-pointer select-none bg-navy/[0.04] px-4 py-3 text-left hover:text-ink" onClick={() => setSortDir((d) => d === 'asc' ? 'desc' : 'asc')}>
-                  <span className="inline-flex items-center gap-1">Grade <SortArrow dir={sortDir} /></span>
+                <th className="w-14 cursor-pointer select-none px-4 py-3 hover:text-ink" onClick={() => toggleSort('id')}>
+                  <span className="inline-flex items-center gap-1">ID {sortBy === 'id' && <SortArrow dir={sortDir} />}</span>
+                </th>
+                <th className="sticky left-0 z-10 cursor-pointer select-none bg-navy/[0.04] px-4 py-3 text-left hover:text-ink" onClick={() => toggleSort('grade')}>
+                  <span className="inline-flex items-center gap-1">Grade {sortBy === 'grade' && <SortArrow dir={sortDir} />}</span>
                 </th>
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
                   <th key={s} className="px-3 py-3 text-right whitespace-nowrap">Step {s}</th>
@@ -198,6 +215,7 @@ export default function SalaryGrades() {
               {pageRows.map((g) => (
                 <>
                   <tr key={g.grade} className="group hover:bg-paper/70">
+                    <td className="px-4 py-3 font-mono text-xs text-ink/60">#{g.id}</td>
                     <td className="sticky left-0 z-10 bg-white px-4 py-3 group-hover:bg-paper/70">
                       <div className="flex items-center gap-2">
                         <button onClick={() => toggleExpanded(g.grade)} className="flex h-6 w-6 items-center justify-center rounded-lg border border-hairline bg-white text-ink/40 hover:bg-paper-dark">
@@ -234,7 +252,7 @@ export default function SalaryGrades() {
                   </tr>
                   {expanded.has(g.grade) && (
                     <tr key={`${g.grade}-detail`} className="bg-paper/40">
-                      <td colSpan={10} className="px-4 py-3">
+                      <td colSpan={11} className="px-4 py-3">
                         <div className="flex flex-wrap gap-2">
                           {[1, 2, 3, 4, 5, 6, 7, 8].slice(0, g.gradeNum === 33 ? 2 : 8).map((s) => {
                             const row = getStepRow(g, s)
@@ -263,7 +281,7 @@ export default function SalaryGrades() {
               ))}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-5 py-14 text-center text-sm text-ink/40">
+                  <td colSpan={11} className="px-5 py-14 text-center text-sm text-ink/40">
                     {grouped.length === 0 ? 'No salary grades yet. Click “Add Salary Grade” to seed SG-1 to SG-33.' : 'No grades match your search.'}
                   </td>
                 </tr>
