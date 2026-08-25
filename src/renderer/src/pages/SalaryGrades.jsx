@@ -399,12 +399,24 @@ export default function SalaryGrades() {
         </Modal>
       )}
 
-      {/* Bulk grade modal */}
+      {/* Bulk grade modal — type to add */}
       {bulk && (
         <Modal title={bulk.originalGrade ? `Update ${bulk.grade}` : 'Add Salary Grade'} onClose={() => setBulk(null)} wide>
           <form onSubmit={saveBulk} className="space-y-4">
             <Field label="Salary Grade" required>
-              <Select variant="form" value={bulk.grade} onChange={(v) => setBulk({ ...bulk, grade: v })} placeholder="Select SG-1 to SG-33…" options={GRADE_OPTIONS} />
+              <input
+                list="sg-grade-list-bulk"
+                className={inputCls}
+                value={bulk.grade}
+                onChange={(e) => setBulk({ ...bulk, grade: e.target.value.toUpperCase() })}
+                placeholder="Type SG-1 to SG-33, e.g. SG-11"
+                required
+              />
+              <datalist id="sg-grade-list-bulk">
+                {GRADE_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value} />
+                ))}
+              </datalist>
             </Field>
             {bulk.grade ? (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -418,7 +430,7 @@ export default function SalaryGrades() {
                 })}
               </div>
             ) : (
-              <div className="rounded-xl border border-dashed border-hairline bg-paper/50 px-4 py-6 text-center font-mono text-xs text-ink/40">Select a grade above to enter its step salaries.</div>
+              <div className="rounded-xl border border-dashed border-hairline bg-paper/50 px-4 py-6 text-center font-mono text-xs text-ink/40">Type a grade above (e.g., SG-11) to enter its step salaries.</div>
             )}
             {bulkError && <div className="rounded-lg border border-status-red/30 bg-status-red/5 px-3 py-2 text-xs text-status-red">{bulkError}</div>}
             <div className="flex items-center justify-between border-t border-hairline pt-4">
