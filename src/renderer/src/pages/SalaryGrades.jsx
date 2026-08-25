@@ -26,7 +26,6 @@ export default function SalaryGrades() {
   const [error, setError] = useState('')
   const [bulkError, setBulkError] = useState('')
   const [toast, setToast] = useState(null)
-  const [expanded, setExpanded] = useState(new Set())
   const [confirmDelStep, setConfirmDelStep] = useState(null)
   const [confirmDelGrade, setConfirmDelGrade] = useState(null)
 
@@ -67,15 +66,6 @@ export default function SalaryGrades() {
   const from = sorted.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1
   const to = Math.min(safePage * PAGE_SIZE, sorted.length)
   const totalSteps = grouped.reduce((s, g) => s + g.count, 0)
-
-  const toggleExpanded = (grade) => {
-    setExpanded((prev) => {
-      const n = new Set(prev)
-      if (n.has(grade)) n.delete(grade)
-      else n.add(grade)
-      return n
-    })
-  }
 
   const openEditStep = (row) => {
     setError('')
@@ -217,12 +207,7 @@ export default function SalaryGrades() {
                   <tr key={g.grade} className="group hover:bg-paper/70">
                     <td className="px-4 py-3 font-mono text-xs text-ink/60">#{g.id}</td>
                     <td className="sticky left-0 z-10 bg-white px-4 py-3 group-hover:bg-paper/70">
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => toggleExpanded(g.grade)} className="flex h-6 w-6 items-center justify-center rounded-lg border border-hairline bg-white text-ink/40 hover:bg-paper-dark">
-                          <ChevronIcon dir={expanded.has(g.grade) ? 'down' : 'right'} />
-                        </button>
-                        <span className="inline-flex items-center rounded-lg bg-navy/5 px-2.5 py-1 font-heading text-sm font-bold text-navy">{g.grade}</span>
-                      </div>
+                      <span className="inline-flex items-center rounded-lg bg-navy/5 px-2.5 py-1 font-heading text-sm font-bold text-navy">{g.grade}</span>
                     </td>
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((stepNum) => {
                       const row = getStepRow(g, stepNum)
@@ -250,33 +235,6 @@ export default function SalaryGrades() {
                       </div>
                     </td>
                   </tr>
-                  {expanded.has(g.grade) && (
-                    <tr key={`${g.grade}-detail`} className="bg-paper/40">
-                      <td colSpan={11} className="px-4 py-3">
-                        <div className="flex flex-wrap gap-2">
-                          {[1, 2, 3, 4, 5, 6, 7, 8].slice(0, g.gradeNum === 33 ? 2 : 8).map((s) => {
-                            const row = getStepRow(g, s)
-                            if (!row) return (
-                              <span key={s} className="inline-flex items-center gap-2 rounded-xl border border-dashed border-hairline bg-white px-3 py-2 text-xs text-ink/40">
-                                <span className="font-mono font-semibold">Step {s}</span> <span className="text-ink/20">— empty</span>
-                              </span>
-                            )
-                            return (
-                              <span key={s} className="inline-flex items-center gap-2 rounded-xl border border-hairline bg-white px-3 py-2 shadow-sm">
-                                <span className="rounded-lg bg-navy/5 px-2 py-1 font-mono text-[11px] font-semibold text-navy">Step {s}</span>
-                                <span className="font-mono text-xs font-semibold text-ink">{money(row.salary)}</span>
-                                <span className="hidden sm:inline font-mono text-[11px] text-ink/35">ID #{row.id}</span>
-                                <button onClick={() => openEditStep(row)} className="rounded-lg p-1 text-ink/40 hover:bg-navy/5 hover:text-navy"><EditIcon small /></button>
-                                <button onClick={() => setConfirmDelStep(row)} className="rounded-lg p-1 text-ink/30 hover:bg-status-red/10 hover:text-status-red"><TrashIcon small /></button>
-                              </span>
-                            )
-                          })}
-                          {g.gradeNum !== 33 && g.steps.length < 8 && <span className="inline-flex items-center rounded-xl bg-status-amber/10 px-3 py-2 font-mono text-xs text-status-amber">Incomplete — missing {8 - g.steps.length} step(s). Step increments are per 3 years of service.</span>}
-                        </div>
-                        <div className="mt-2 font-mono text-[11px] text-ink/40">Daily rate (casual) = monthly ÷ 22 days. <span className="text-ink/55">E.g., {g.grade} Step 1 casual ≈ {moneyCompact(g.minSalary / 22)}/day</span> · Promotion moves to higher grade; step movement stays within grade.</div>
-                      </td>
-                    </tr>
-                  )}
                 </>
               ))}
               {pageRows.length === 0 && (
