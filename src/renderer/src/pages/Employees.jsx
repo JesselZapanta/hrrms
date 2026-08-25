@@ -237,13 +237,15 @@ export default function Employees({ onOpenFolder, currentUser }) {
                     >
                       <EditIcon />
                     </button>
-                    <button
-                      onClick={() => setConfirmDel(emp)}
-                      title="Delete"
-                      className="rounded-lg p-2 text-ink/50 transition-colors hover:bg-status-red/10 hover:text-status-red"
-                    >
-                      <TrashIcon />
-                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => setConfirmDel(emp)}
+                        title="Delete"
+                        className="rounded-lg p-2 text-ink/50 transition-colors hover:bg-status-red/10 hover:text-status-red"
+                      >
+                        <TrashIcon />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
