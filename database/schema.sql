@@ -41,9 +41,11 @@ CREATE TABLE IF NOT EXISTS offices (
 
 CREATE TABLE IF NOT EXISTS salary_grades (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  grade TEXT NOT NULL UNIQUE,
+  grade TEXT NOT NULL,
+  step INTEGER NOT NULL CHECK (step BETWEEN 1 AND 8),
   salary REAL NOT NULL,
-  created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+  created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+  UNIQUE(grade, step)
 );
 
 CREATE TABLE IF NOT EXISTS categories (

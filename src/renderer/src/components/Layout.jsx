@@ -17,7 +17,7 @@ const META = {
   folder: { title: 'Employee Folder', subtitle: 'Filing Documents' },
   categories: { title: 'File Categories', subtitle: 'Filing Structure' },
   offices: { title: 'Offices', subtitle: 'City Offices Directory' },
-  salaryGrades: { title: 'Salary Grades', subtitle: 'Salary Standardization Schedule' },
+  salaryGrades: { title: 'Salary Grades', subtitle: 'Salary Standardization' },
   users: { title: 'User Management', subtitle: 'Access Control' },
   profile: { title: 'Profile', subtitle: 'Account Settings' }
 }

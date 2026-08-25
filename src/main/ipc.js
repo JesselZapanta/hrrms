@@ -59,11 +59,18 @@ export function registerIpc() {
   ipcMain.handle('offices:update', wrap((id, d) => OfficeService.update(id, d)))
   ipcMain.handle('offices:remove', wrap((id) => OfficeService.remove(id)))
 
-  // Salary grades
+  // Salary grades (with SG steps 1-8, SG-33 1-2)
   ipcMain.handle('salaryGrades:list', wrap((q) => SalaryGradeService.list(q)))
+  ipcMain.handle('salaryGrades:listGrouped', wrap((q) => SalaryGradeService.listGrouped(q)))
+  ipcMain.handle('salaryGrades:listGrades', wrap(() => SalaryGradeService.listGrades()))
+  ipcMain.handle('salaryGrades:get', wrap((id) => SalaryGradeService.get(id)))
+  ipcMain.handle('salaryGrades:getByGradeStep', wrap((grade, step) => SalaryGradeService.getByGradeStep(grade, step)))
   ipcMain.handle('salaryGrades:create', wrap((d) => SalaryGradeService.create(d)))
   ipcMain.handle('salaryGrades:update', wrap((id, d) => SalaryGradeService.update(id, d)))
+  ipcMain.handle('salaryGrades:upsert', wrap((d) => SalaryGradeService.upsert(d)))
+  ipcMain.handle('salaryGrades:upsertGrade', wrap((grade, steps) => SalaryGradeService.upsertGrade(grade, steps)))
   ipcMain.handle('salaryGrades:remove', wrap((id) => SalaryGradeService.remove(id)))
+  ipcMain.handle('salaryGrades:removeGrade', wrap((grade) => SalaryGradeService.removeGrade(grade)))
 
   // Files
   ipcMain.handle('files:list', wrap((employeeId) => FileService.listByEmployee(employeeId)))

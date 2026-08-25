@@ -6,16 +6,19 @@ import { StatusDot } from '../components/StatusDot.jsx'
 import Toast from '../components/Toast.jsx'
 
 const EMPTY = {
-  complete_name: '', position: '', office: '', plantilla_item: '', salary_grade: '',
+  complete_name: '', position: '', office: '', plantilla_item: '', salary_grade: '', salary_step: '',
   birthday: '', status: 'permanent', date_hired: '', contact_number: '', email: '',
   complete_address: '', profile_pic: ''
 }
 const PAGE_SIZE = 10
 
+const money = (n) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(n) || 0)
+
 export default function Employees({ onOpenFolder }) {
   const [employees, setEmployees] = useState([])
   const [offices, setOffices] = useState([])
   const [salaryGrades, setSalaryGrades] = useState([])
+  const [salaryGroups, setSalaryGroups] = useState([])
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [sortBy, setSortBy] = useState('id')
@@ -34,12 +37,14 @@ export default function Employees({ onOpenFolder }) {
   useEffect(() => {
     load('')
     ;(async () => {
-      const [o, g] = await Promise.all([
+      const [o, g, grp] = await Promise.all([
         window.api.offices.list({}),
-        window.api.salaryGrades.list({})
+        window.api.salaryGrades.list({}),
+        window.api.salaryGrades.listGrouped({}),
       ])
       if (o.ok) setOffices(o.data)
       if (g.ok) setSalaryGrades(g.data)
+      if (grp.ok) setSalaryGroups(grp.data)
     })()
   }, [])
 
@@ -399,16 +404,58 @@ export default function Employees({ onOpenFolder }) {
                   <Select
                     variant="form"
                     value={editing.salary_grade || ''}
-                    onChange={(v) => setEditing({ ...editing, salary_grade: v })}
-                    placeholder={salaryGrades.length === 0 ? 'No salary grades yet' : 'Select salary grade…'}
-                    options={salaryGrades.map((g) => ({
+                    onChange={(v) => {
+                      const gradeNum = Number(String(v).split('-')[1])
+                      const max = gradeNum === 33 ? 2 : 8
+                      let step = editing.salary_step
+                      if (step && Number(step) > max) step = ''
+                      setEditing({ ...editing, salary_grade: v, salary_step: step })
+                    }}
+                    placeholder={salaryGroups.length === 0 ? 'No salary grades yet' : 'Select salary grade…'}
+                    options={(salaryGroups.length ? salaryGroups : (() => {
+                      const m = new Map()
+                      salaryGrades.forEach((r) => { if (!m.has(r.grade)) m.set(r.grade, r) })
+                      return Array.from(m.values()).map((g) => ({ grade: g.grade, minSalary: g.salary, maxSalary: g.salary, count: 1 }))
+                    })()).map((g) => ({
                       value: g.grade,
-                      label: `${g.grade} — ${new Intl.NumberFormat('en-PH', {
-                        style: 'currency',
-                        currency: 'PHP'
-                      }).format(Number(g.salary) || 0)}`
+                      label: `${g.grade} — ${new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(g.minSalary) || 0)}${g.maxSalary !== g.minSalary ? ` – ${new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(g.maxSalary) || 0)}` : ''} · ${g.count} step(s)`,
                     }))}
                   />
+                  {editing.salary_grade && (() => {
+                    const g = salaryGroups.find((x) => x.grade === editing.salary_grade)
+                    if (!g) return null
+                    const max = g.gradeNum === 33 ? 2 : 8
+                    return <p className="mt-1 font-mono text-[10px] text-ink/40">{g.minSalary !== g.maxSalary ? `${money(g.minSalary)} – ${money(g.maxSalary)}` : money(g.minSalary)} · {g.count}/{max} steps</p>
+                  })()}
+                </Field>
+                <Field label="SG Step">
+                  <Select
+                    variant="form"
+                    value={editing.salary_step ? String(editing.salary_step) : ''}
+                    onChange={(v) => setEditing({ ...editing, salary_step: v })}
+                    placeholder={editing.salary_grade ? 'Select step…' : 'Select grade first'}
+                    options={(() => {
+                      if (!editing.salary_grade) return []
+                      const g = salaryGroups.find((x) => x.grade === editing.salary_grade)
+                      const max = g ? (g.gradeNum === 33 ? 2 : 8) : 8
+                      const opts = []
+                      for (let i = 1; i <= max; i++) {
+                        const row = g ? g.steps.find((s) => s.step === i) : salaryGrades.find((r) => r.grade === editing.salary_grade && r.step === i)
+                        const sal = row ? Number(row.salary) : null
+                        opts.push({
+                          value: String(i),
+                          label: sal ? `Step ${i} — ${new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(sal)}` : `Step ${i}`,
+                        })
+                      }
+                      return opts
+                    })()}
+                  />
+                  {editing.salary_grade && editing.salary_step && (() => {
+                    const g = salaryGroups.find((x) => x.grade === editing.salary_grade)
+                    const row = g ? g.steps.find((s) => s.step === Number(editing.salary_step)) : salaryGrades.find((r) => r.grade === editing.salary_grade && r.step === Number(editing.salary_step))
+                    if (!row) return <p className="mt-1 font-mono text-[10px] text-status-amber">No salary set for this step yet — will save step assignment only.</p>
+                    return <p className="mt-1 font-mono text-[11px] font-semibold text-navy">→ {money(row.salary)}/mo · {money(row.salary / 22)}/day (casual)</p>
+                  })()}
                 </Field>
                 <Field label="Date Hired">
                   <DateInput

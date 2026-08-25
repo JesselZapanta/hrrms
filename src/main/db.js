@@ -55,7 +55,25 @@ export function initDb() {
   const seedPath = path.join(getSqlDir(), 'seed.sql')
 
   const schema = fs.readFileSync(schemaPath, 'utf-8')
-  database.exec(schema)
+  // Execute schema statement-by-statement so a single failing
+  // index (e.g., idx on new `step` column) doesn't abort whole init
+  // on legacy DBs that still lack the column — migrate() will fix them.
+  try {
+    database.exec(schema)
+  } catch (e) {
+    // Fallback: try each statement individually, ignoring expected
+    // "no such column: step" / "already exists" on legacy DBs
+    console.warn('[initDb] schema exec warning:', e.message)
+    for (const stmt of schema.split(';')) {
+      const s = stmt.trim()
+      if (!s) continue
+      try { database.exec(s) } catch (err) {
+        const msg = String(err.message)
+        if (msg.includes('no such column: step') || msg.includes('already exists')) continue
+        console.error('[initDb] statement failed:', msg, s.slice(0, 100))
+      }
+    }
+  }
 
   migrate(database)
 
@@ -87,6 +105,31 @@ export function initDb() {
   const salaryGradeCount = database.prepare('SELECT COUNT(*) AS count FROM salary_grades').get().count
   if (salaryGradeCount === 0) {
     seedSalaryGrades(database)
+  } else if (salaryGradeCount < 258) {
+    // Existing DB (legacy single-step or partial) — fill missing steps with official 2026 rates
+    seedMissingSalaryGradeSteps(database)
+    // Patch legacy Step 1 salaries that still hold pre-2026 seed values (e.g., 13530 -> 14634)
+    try {
+      const legacyTo2026 = new Map([
+        ['SG-1|13530', 14634], ['SG-2|14102', 15522], ['SG-3|14702', 16486], ['SG-4|15326', 17506],
+        ['SG-5|15976', 18581], ['SG-6|16653', 19716], ['SG-7|17359', 20914], ['SG-8|18094', 22423],
+        ['SG-9|18860', 24329], ['SG-10|19658', 26917], ['SG-11|20489', 31705], ['SG-12|21356', 33947],
+        ['SG-13|22258', 36125], ['SG-14|23199', 38764], ['SG-15|24182', 42178], ['SG-16|25205', 45694],
+        ['SG-17|26272', 49562], ['SG-18|27384', 53818], ['SG-19|28544', 59153], ['SG-20|29755', 66052],
+        ['SG-21|31019', 73303], ['SG-22|32338', 81796], ['SG-23|33713', 91306], ['SG-24|35150', 102603],
+        ['SG-25|36641', 116643], ['SG-26|38191', 131807], ['SG-27|39799', 148940], ['SG-28|41469', 167129],
+        ['SG-29|43207', 187531], ['SG-30|45007', 210718], ['SG-31|46874', 300961], ['SG-32|48813', 356237],
+        ['SG-33|50826', 449157],
+      ])
+      const rows = database.prepare('SELECT id, grade, step, salary FROM salary_grades WHERE step = 1').all()
+      const upd = database.prepare('UPDATE salary_grades SET salary = ? WHERE id = ?')
+      database.exec('BEGIN')
+      for (const r of rows) {
+        const key = `${r.grade}|${r.salary}`
+        if (legacyTo2026.has(key)) upd.run(legacyTo2026.get(key), r.id)
+      }
+      database.exec('COMMIT')
+    } catch {}
   }
 
   return database
@@ -120,6 +163,62 @@ function migrate(database) {
       database.exec(`ALTER TABLE employees ADD COLUMN ${col} ${type}`)
     }
   }
+
+  // Salary grades: migrate legacy single-salary table to grade+step (SG steps)
+  try {
+    const sgCols = database.prepare('PRAGMA table_info(salary_grades)').all().map((c) => c.name)
+    if (sgCols.length > 0 && !sgCols.includes('step')) {
+      // Legacy schema detected: grade UNIQUE, salary single value
+      database.exec(`
+        CREATE TABLE IF NOT EXISTS salary_grades_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          grade TEXT NOT NULL,
+          step INTEGER NOT NULL CHECK (step BETWEEN 1 AND 8),
+          salary REAL NOT NULL,
+          created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+          UNIQUE(grade, step)
+        )
+      `)
+      // Copy existing rows as Step 1
+      const legacyRows = database.prepare('SELECT grade, salary, created_at FROM salary_grades').all()
+      const ins = database.prepare('INSERT OR IGNORE INTO salary_grades_new (grade, step, salary, created_at) VALUES (?, 1, ?, ?)')
+      database.exec('BEGIN')
+      try {
+        for (const r of legacyRows) {
+          ins.run(String(r.grade).trim().toUpperCase(), Number(r.salary) || 0, r.created_at)
+        }
+        database.exec('COMMIT')
+      } catch (e) {
+        database.exec('ROLLBACK')
+        throw e
+      }
+      database.exec('DROP TABLE salary_grades')
+      database.exec('ALTER TABLE salary_grades_new RENAME TO salary_grades')
+      database.exec('CREATE INDEX IF NOT EXISTS idx_salary_grades_grade ON salary_grades (grade)')
+      database.exec('CREATE INDEX IF NOT EXISTS idx_salary_grades_grade_step ON salary_grades (grade, step)')
+    }
+  } catch (e) {
+    // If migration fails, don't block app startup; log and continue
+    console.error('[migrate] salary_grades step migration failed:', e.message)
+  }
+
+  // Ensure indexes exist for fresh or migrated DB, clean up legacy _new names if any
+  try {
+    database.exec('DROP INDEX IF EXISTS idx_salary_grades_new_grade')
+    database.exec('DROP INDEX IF EXISTS idx_salary_grades_new_grade_step')
+  } catch {}
+  try {
+    database.exec('CREATE INDEX IF NOT EXISTS idx_salary_grades_grade ON salary_grades (grade)')
+    database.exec('CREATE INDEX IF NOT EXISTS idx_salary_grades_grade_step ON salary_grades (grade, step)')
+  } catch {}
+
+  // Employees: add salary_step column for SG step linkage
+  try {
+    const empCols2 = database.prepare('PRAGMA table_info(employees)').all().map((c) => c.name)
+    if (!empCols2.includes('salary_step')) {
+      database.exec('ALTER TABLE employees ADD COLUMN salary_step INTEGER')
+    }
+  } catch {}
 }
 
 const EMPLOYEE_SAMPLES = [
@@ -223,27 +322,72 @@ function seedOffices(database) {
   }
 }
 
-const SALARY_GRADE_SAMPLES = [
-  ['SG-1', 13530.00], ['SG-2', 14102.00], ['SG-3', 14702.00], ['SG-4', 15326.00],
-  ['SG-5', 15976.00], ['SG-6', 16653.00], ['SG-7', 17359.00], ['SG-8', 18094.00],
-  ['SG-9', 18860.00], ['SG-10', 19658.00], ['SG-11', 20489.00], ['SG-12', 21356.00],
-  ['SG-13', 22258.00], ['SG-14', 23199.00], ['SG-15', 24182.00], ['SG-16', 25205.00],
-  ['SG-17', 26272.00], ['SG-18', 27384.00], ['SG-19', 28544.00], ['SG-20', 29755.00],
-  ['SG-21', 31019.00], ['SG-22', 32338.00], ['SG-23', 33713.00], ['SG-24', 35150.00],
-  ['SG-25', 36641.00], ['SG-26', 38191.00], ['SG-27', 39799.00], ['SG-28', 41469.00],
-  ['SG-29', 43207.00], ['SG-30', 45007.00], ['SG-31', 46874.00], ['SG-32', 48813.00],
-  ['SG-33', 50826.00]
+// Official 2026 Third Tranche Salary Schedule (EO 64 s.2024, DBM NBC No. 601 Annex A)
+const SALARY_GRADE_2026 = [
+  ['SG-1', 1, 14634], ['SG-1', 2, 14730], ['SG-1', 3, 14849], ['SG-1', 4, 14968], ['SG-1', 5, 15089], ['SG-1', 6, 15211], ['SG-1', 7, 15333], ['SG-1', 8, 15456],
+  ['SG-2', 1, 15522], ['SG-2', 2, 15636], ['SG-2', 3, 15752], ['SG-2', 4, 15869], ['SG-2', 5, 15986], ['SG-2', 6, 16103], ['SG-2', 7, 16223], ['SG-2', 8, 16342],
+  ['SG-3', 1, 16486], ['SG-3', 2, 16610], ['SG-3', 3, 16732], ['SG-3', 4, 16856], ['SG-3', 5, 16982], ['SG-3', 6, 17106], ['SG-3', 7, 17234], ['SG-3', 8, 17360],
+  ['SG-4', 1, 17506], ['SG-4', 2, 17636], ['SG-4', 3, 17767], ['SG-4', 4, 17898], ['SG-4', 5, 18031], ['SG-4', 6, 18163], ['SG-4', 7, 18298], ['SG-4', 8, 18433],
+  ['SG-5', 1, 18581], ['SG-5', 2, 18720], ['SG-5', 3, 18858], ['SG-5', 4, 18998], ['SG-5', 5, 19137], ['SG-5', 6, 19280], ['SG-5', 7, 19423], ['SG-5', 8, 19565],
+  ['SG-6', 1, 19716], ['SG-6', 2, 19862], ['SG-6', 3, 20009], ['SG-6', 4, 20158], ['SG-6', 5, 20307], ['SG-6', 6, 20456], ['SG-6', 7, 20609], ['SG-6', 8, 20761],
+  ['SG-7', 1, 20914], ['SG-7', 2, 21069], ['SG-7', 3, 21224], ['SG-7', 4, 21382], ['SG-7', 5, 21539], ['SG-7', 6, 21699], ['SG-7', 7, 21859], ['SG-7', 8, 22022],
+  ['SG-8', 1, 22423], ['SG-8', 2, 22627], ['SG-8', 3, 22832], ['SG-8', 4, 23038], ['SG-8', 5, 23246], ['SG-8', 6, 23456], ['SG-8', 7, 23668], ['SG-8', 8, 23883],
+  ['SG-9', 1, 24329], ['SG-9', 2, 24523], ['SG-9', 3, 24720], ['SG-9', 4, 24917], ['SG-9', 5, 25117], ['SG-9', 6, 25318], ['SG-9', 7, 25521], ['SG-9', 8, 25725],
+  ['SG-10', 1, 26917], ['SG-10', 2, 27131], ['SG-10', 3, 27347], ['SG-10', 4, 27565], ['SG-10', 5, 27786], ['SG-10', 6, 28007], ['SG-10', 7, 28230], ['SG-10', 8, 28456],
+  ['SG-11', 1, 31705], ['SG-11', 2, 31820], ['SG-11', 3, 32109], ['SG-11', 4, 32401], ['SG-11', 5, 32697], ['SG-11', 6, 32998], ['SG-11', 7, 33302], ['SG-11', 8, 33611],
+  ['SG-12', 1, 33947], ['SG-12', 2, 34069], ['SG-12', 3, 34357], ['SG-12', 4, 34648], ['SG-12', 5, 34943], ['SG-12', 6, 35242], ['SG-12', 7, 35544], ['SG-12', 8, 35850],
+  ['SG-13', 1, 36125], ['SG-13', 2, 36283], ['SG-13', 3, 36599], ['SG-13', 4, 36919], ['SG-13', 5, 37244], ['SG-13', 6, 37572], ['SG-13', 7, 37904], ['SG-13', 8, 38241],
+  ['SG-14', 1, 38764], ['SG-14', 2, 39141], ['SG-14', 3, 39523], ['SG-14', 4, 39910], ['SG-14', 5, 40300], ['SG-14', 6, 40696], ['SG-14', 7, 41097], ['SG-14', 8, 41503],
+  ['SG-15', 1, 42178], ['SG-15', 2, 42594], ['SG-15', 3, 43015], ['SG-15', 4, 43442], ['SG-15', 5, 43874], ['SG-15', 6, 44310], ['SG-15', 7, 44753], ['SG-15', 8, 45202],
+  ['SG-16', 1, 45694], ['SG-16', 2, 46152], ['SG-16', 3, 46615], ['SG-16', 4, 47084], ['SG-16', 5, 47559], ['SG-16', 6, 48040], ['SG-16', 7, 48528], ['SG-16', 8, 49020],
+  ['SG-17', 1, 49562], ['SG-17', 2, 50066], ['SG-17', 3, 50576], ['SG-17', 4, 51092], ['SG-17', 5, 51614], ['SG-17', 6, 52144], ['SG-17', 7, 52678], ['SG-17', 8, 53221],
+  ['SG-18', 1, 53818], ['SG-18', 2, 54371], ['SG-18', 3, 54933], ['SG-18', 4, 55499], ['SG-18', 5, 56075], ['SG-18', 6, 56657], ['SG-18', 7, 57246], ['SG-18', 8, 57842],
+  ['SG-19', 1, 59153], ['SG-19', 2, 59966], ['SG-19', 3, 60793], ['SG-19', 4, 61632], ['SG-19', 5, 62486], ['SG-19', 6, 63353], ['SG-19', 7, 64236], ['SG-19', 8, 65132],
+  ['SG-20', 1, 66052], ['SG-20', 2, 66970], ['SG-20', 3, 67904], ['SG-20', 4, 68853], ['SG-20', 5, 69818], ['SG-20', 6, 70772], ['SG-20', 7, 71727], ['SG-20', 8, 72671],
+  ['SG-21', 1, 73303], ['SG-21', 2, 74337], ['SG-21', 3, 75388], ['SG-21', 4, 76456], ['SG-21', 5, 77542], ['SG-21', 6, 78645], ['SG-21', 7, 79692], ['SG-21', 8, 80831],
+  ['SG-22', 1, 81796], ['SG-22', 2, 82963], ['SG-22', 3, 84151], ['SG-22', 4, 85356], ['SG-22', 5, 86582], ['SG-22', 6, 87746], ['SG-22', 7, 89011], ['SG-22', 8, 90295],
+  ['SG-23', 1, 91306], ['SG-23', 2, 92622], ['SG-23', 3, 93962], ['SG-23', 4, 95330], ['SG-23', 5, 96823], ['SG-23', 6, 98341], ['SG-23', 7, 99883], ['SG-23', 8, 101318],
+  ['SG-24', 1, 102603], ['SG-24', 2, 104209], ['SG-24', 3, 105841], ['SG-24', 4, 107500], ['SG-24', 5, 109185], ['SG-24', 6, 110898], ['SG-24', 7, 112533], ['SG-24', 8, 114301],
+  ['SG-25', 1, 116643], ['SG-25', 2, 118469], ['SG-25', 3, 120326], ['SG-25', 4, 122212], ['SG-25', 5, 124131], ['SG-25', 6, 126079], ['SG-25', 7, 128061], ['SG-25', 8, 130073],
+  ['SG-26', 1, 131807], ['SG-26', 2, 133870], ['SG-26', 3, 135968], ['SG-26', 4, 138100], ['SG-26', 5, 140268], ['SG-26', 6, 142469], ['SG-26', 7, 144707], ['SG-26', 8, 146983],
+  ['SG-27', 1, 148940], ['SG-27', 2, 151273], ['SG-27', 3, 153644], ['SG-27', 4, 155906], ['SG-27', 5, 158353], ['SG-27', 6, 160235], ['SG-27', 7, 162752], ['SG-27', 8, 165310],
+  ['SG-28', 1, 167129], ['SG-28', 2, 169752], ['SG-28', 3, 172418], ['SG-28', 4, 174797], ['SG-28', 5, 177545], ['SG-28', 6, 180339], ['SG-28', 7, 182660], ['SG-28', 8, 185537],
+  ['SG-29', 1, 187531], ['SG-29', 2, 190482], ['SG-29', 3, 193480], ['SG-29', 4, 196528], ['SG-29', 5, 199624], ['SG-29', 6, 202005], ['SG-29', 7, 205191], ['SG-29', 8, 208430],
+  ['SG-30', 1, 210718], ['SG-30', 2, 214038], ['SG-30', 3, 217207], ['SG-30', 4, 220425], ['SG-30', 5, 223691], ['SG-30', 6, 227224], ['SG-30', 7, 230595], ['SG-30', 8, 234240],
+  ['SG-31', 1, 300961], ['SG-31', 2, 306691], ['SG-31', 3, 312532], ['SG-31', 4, 318182], ['SG-31', 5, 323938], ['SG-31', 6, 329989], ['SG-31', 7, 336092], ['SG-31', 8, 342310],
+  ['SG-32', 1, 356237], ['SG-32', 2, 363257], ['SG-32', 3, 370418], ['SG-32', 4, 377359], ['SG-32', 5, 384805], ['SG-32', 6, 392400], ['SG-32', 7, 400150], ['SG-32', 8, 408055],
+  ['SG-33', 1, 449157], ['SG-33', 2, 462329],
 ]
+
+// Keep legacy name for compatibility, now maps to 2026 data
+const SALARY_GRADE_SAMPLES = SALARY_GRADE_2026
 
 function seedSalaryGrades(database) {
   const insert = database.prepare(
-    'INSERT INTO salary_grades (grade, salary) VALUES (?, ?)'
+    'INSERT OR IGNORE INTO salary_grades (grade, step, salary) VALUES (?, ?, ?)'
   )
   database.exec('BEGIN')
   try {
-    SALARY_GRADE_SAMPLES.forEach(([grade, salary]) => {
-      insert.run(grade, salary)
+    SALARY_GRADE_2026.forEach(([grade, step, salary]) => {
+      insert.run(grade, step, salary)
     })
+    database.exec('COMMIT')
+  } catch (err) {
+    database.exec('ROLLBACK')
+    throw err
+  }
+}
+
+function seedMissingSalaryGradeSteps(database) {
+  const existing = database.prepare('SELECT grade, step FROM salary_grades').all()
+  const seen = new Set(existing.map((r) => `${r.grade}|${r.step}`))
+  const insert = database.prepare('INSERT OR IGNORE INTO salary_grades (grade, step, salary) VALUES (?, ?, ?)')
+  database.exec('BEGIN')
+  try {
+    for (const [grade, step, salary] of SALARY_GRADE_2026) {
+      const key = `${grade}|${step}`
+      if (!seen.has(key)) insert.run(grade, step, salary)
+    }
     database.exec('COMMIT')
   } catch (err) {
     database.exec('ROLLBACK')
