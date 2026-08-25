@@ -78,7 +78,7 @@ export default function App() {
       {view === 'users' && user.role === 'admin' && <Users currentUser={user} />}
       {view === 'offices' && user.role === 'admin' && <Offices />}
       {view === 'salaryGrades' && user.role === 'admin' && <SalaryGrades />}
-      {view === 'categories' && <Categories />}
+      {view === 'categories' && <Categories currentUser={user} />}
     </Layout>
   )
 }
