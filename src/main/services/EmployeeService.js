@@ -4,7 +4,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 const FIELDS = [
-  'complete_name', 'position', 'office', 'plantilla_item', 'salary_grade',
+  'complete_name', 'position', 'office', 'plantilla_item', 'salary_grade', 'salary_step',
   'birthday', 'status', 'date_hired', 'contact_number', 'email',
   'complete_address', 'profile_pic'
 ]
@@ -39,13 +39,16 @@ export const EmployeeService = {
   create(data) {
     const db = getDb()
     const clean = pick(data)
+    // Ensure salary_step is handled as integer/null in SQL
+    if (clean.salary_step === '' || clean.salary_step == null) clean.salary_step = null
+    else clean.salary_step = Number(clean.salary_step) || null
     let id
     db.exec('BEGIN')
     try {
       const info = db
         .prepare(
-          `INSERT INTO employees (complete_name, position, office, plantilla_item, salary_grade, birthday, status, date_hired, contact_number, email, complete_address, profile_pic, record_no)
-           VALUES (@complete_name, @position, @office, @plantilla_item, @salary_grade, @birthday, @status, @date_hired, @contact_number, @email, @complete_address, @profile_pic, @record_no)`
+          `INSERT INTO employees (complete_name, position, office, plantilla_item, salary_grade, salary_step, birthday, status, date_hired, contact_number, email, complete_address, profile_pic, record_no)
+           VALUES (@complete_name, @position, @office, @plantilla_item, @salary_grade, @salary_step, @birthday, @status, @date_hired, @contact_number, @email, @complete_address, @profile_pic, @record_no)`
         )
         .run({ ...clean, record_no: `TEMP-${Date.now()}-${Math.random().toString(36).slice(2, 7)}` })
       id = Number(info.lastInsertRowid)
@@ -99,6 +102,20 @@ function pick(data) {
     if (data[f] !== undefined) {
       if (f === 'profile_pic') {
         out[f] = data[f] ? encrypt(String(data[f])) : null
+      } else if (f === 'salary_step') {
+        const v = data[f]
+        if (v === '' || v == null) out[f] = null
+        else {
+          const n = Number(v)
+          if (!Number.isInteger(n) || n < 1 || n > 8) out[f] = null
+          else out[f] = n
+        }
+      } else if (f === 'salary_grade') {
+        const g = String(data[f] ?? '').trim().toUpperCase()
+        out[f] = g ? g.replace(/\s+/g, '') : ''
+        // Normalize SG formatting: SG1 -> SG-1
+        const m = out[f].match(/^SG-?(\d{1,2})$/)
+        if (m) out[f] = `SG-${Number(m[1])}`
       } else {
         out[f] = String(data[f] ?? '').trim()
       }

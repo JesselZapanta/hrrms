@@ -45,9 +45,16 @@ const api = {
   },
   salaryGrades: {
     list: (query = {}) => ipcRenderer.invoke('salaryGrades:list', query),
+    listGrouped: (query = {}) => ipcRenderer.invoke('salaryGrades:listGrouped', query),
+    listGrades: () => ipcRenderer.invoke('salaryGrades:listGrades'),
+    get: (id) => ipcRenderer.invoke('salaryGrades:get', id),
+    getByGradeStep: (grade, step) => ipcRenderer.invoke('salaryGrades:getByGradeStep', grade, step),
     create: (data) => ipcRenderer.invoke('salaryGrades:create', data),
     update: (id, data) => ipcRenderer.invoke('salaryGrades:update', id, data),
-    remove: (id) => ipcRenderer.invoke('salaryGrades:remove', id)
+    upsert: (data) => ipcRenderer.invoke('salaryGrades:upsert', data),
+    upsertGrade: (grade, steps) => ipcRenderer.invoke('salaryGrades:upsertGrade', grade, steps),
+    remove: (id) => ipcRenderer.invoke('salaryGrades:remove', id),
+    removeGrade: (grade) => ipcRenderer.invoke('salaryGrades:removeGrade', grade)
   },
   files: {
     list: (employeeId) => ipcRenderer.invoke('files:list', employeeId),
