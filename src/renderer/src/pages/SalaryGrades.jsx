@@ -91,6 +91,13 @@ export default function SalaryGrades() {
     setBulk({ grade: '', steps: {} })
   }
 
+  const openEditGrade = (group) => {
+    setBulkError('')
+    const steps = {}
+    for (const s of group.steps) steps[String(s.step)] = String(s.salary)
+    setBulk({ grade: group.grade, steps, originalGrade: group.grade })
+  }
+
 
 
   const saveStep = async (e) => {
@@ -245,7 +252,11 @@ export default function SalaryGrades() {
                       )
                     })}
                     <td className="px-4 py-3 text-right">
-                      <span className="font-mono text-[11px] text-ink/35">{g.count}/{g.expectedSteps} steps</span>
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="font-mono text-[11px] text-ink/35">{g.count}/{g.expectedSteps}</span>
+                        <button onClick={() => openEditGrade(g)} title="Update grade" className="rounded-lg p-2 text-ink/50 hover:bg-orange-soft hover:text-orange"><EditIcon /></button>
+                        <button onClick={() => setConfirmDelGrade(g.grade)} title="Delete grade" className="rounded-lg p-2 text-ink/40 hover:bg-status-red/10 hover:text-status-red"><TrashIcon /></button>
+                      </div>
                     </td>
                   </tr>
                   {expanded.has(g.grade) && (
@@ -416,9 +427,9 @@ export default function SalaryGrades() {
         </Modal>
       )}
 
-      {/* Bulk grade modal — Add only */}
+      {/* Bulk grade modal */}
       {bulk && (
-        <Modal title="Add Salary Grade" onClose={() => setBulk(null)} wide>
+        <Modal title={bulk.originalGrade ? `Update ${bulk.grade}` : 'Add Salary Grade'} onClose={() => setBulk(null)} wide>
           <form onSubmit={saveBulk} className="space-y-4">
             <Field label="Salary Grade" required>
               <Select variant="form" value={bulk.grade} onChange={(v) => setBulk({ ...bulk, grade: v })} placeholder="Select SG-1 to SG-33…" options={GRADE_OPTIONS} />
