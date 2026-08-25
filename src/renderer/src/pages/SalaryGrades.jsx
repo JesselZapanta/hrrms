@@ -204,7 +204,7 @@ export default function SalaryGrades() {
             <tbody className="divide-y divide-hairline">
               {pageRows.map((g) => (
                 <>
-                  <tr key={g.grade} className="group hover:bg-paper/70">
+                  <tr key={g.grade} className="group whitespace-nowrap hover:bg-paper/70">
                     <td className="px-4 py-3 font-mono text-xs text-ink/60">#{g.id}</td>
                     <td className="sticky left-0 z-10 bg-white px-4 py-3 group-hover:bg-paper/70">
                       <span className="inline-flex items-center rounded-lg bg-navy/5 px-2.5 py-1 font-heading text-sm font-bold text-navy">{g.grade}</span>
