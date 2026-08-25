@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Modal } from '../components/Modal.jsx'
 import Toast from '../components/Toast.jsx'
 
-export default function Categories() {
+export default function Categories({ currentUser }) {
+  const isAdmin = currentUser?.role === 'admin'
   const [categories, setCategories] = useState([])
   const [search, setSearch] = useState('')
   const [collapsed, setCollapsed] = useState({})
@@ -175,13 +176,15 @@ export default function Categories() {
                   >
                     <EditIcon />
                   </button>
-                  <button
-                    onClick={() => tryDelete({ type: 'category', id: cat.id, name: cat.name, file_count: cat.file_count })}
-                    className="rounded-lg border border-hairline bg-white p-2 text-ink/50 transition-colors hover:border-status-red hover:bg-status-red/5 hover:text-status-red"
-                    title="Delete category"
-                  >
-                    <TrashIcon />
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => tryDelete({ type: 'category', id: cat.id, name: cat.name, file_count: cat.file_count })}
+                      className="rounded-lg border border-hairline bg-white p-2 text-ink/50 transition-colors hover:border-status-red hover:bg-status-red/5 hover:text-status-red"
+                      title="Delete category"
+                    >
+                      <TrashIcon />
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -206,13 +209,15 @@ export default function Categories() {
                         >
                           <EditIcon />
                         </button>
-                        <button
-                          onClick={() => tryDelete({ type: 'sub', id: sub.id, name: sub.name, file_count: sub.file_count })}
-                          className="rounded-lg p-1.5 text-ink/50 transition-colors hover:bg-status-red/5 hover:text-status-red"
-                          title="Delete subcategory"
-                        >
-                          <TrashIcon />
-                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={() => tryDelete({ type: 'sub', id: sub.id, name: sub.name, file_count: sub.file_count })}
+                            className="rounded-lg p-1.5 text-ink/50 transition-colors hover:bg-status-red/5 hover:text-status-red"
+                            title="Delete subcategory"
+                          >
+                            <TrashIcon />
+                          </button>
+                        )}
                       </div>
                     </li>
                   ))}
