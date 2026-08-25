@@ -63,24 +63,6 @@ export default function SalaryGrades() {
     })
   }
 
-  const openAddStep = () => {
-    setError('')
-    // Default to first missing step; if all 33 grades complete, default to SG-1 Step 1 (will upsert/update)
-    let defGrade = 'SG-1'
-    let defStep = '1'
-    for (const g of grouped) {
-      if (g.count < g.expectedSteps) {
-        defGrade = g.grade
-        for (let s = 1; s <= g.expectedSteps; s++) {
-          if (!g.steps.some((r) => r.step === s)) { defStep = String(s); break }
-        }
-        break
-      }
-    }
-    // If all complete, keep SG-1/1 but user can change; upsert will update instead of failing
-    setEditing({ grade: defGrade, step: defStep, salary: '' })
-  }
-
   const openEditStep = (row) => {
     setError('')
     setEditing({ id: row.id, grade: row.grade, step: String(row.step), salary: String(row.salary) })
@@ -181,12 +163,6 @@ export default function SalaryGrades() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={openAddStep}
-            className="flex items-center gap-2 rounded-xl border border-orange/20 bg-white px-4 py-2.5 text-sm font-semibold text-orange shadow-sm transition-all hover:bg-orange-soft active:scale-[.98]"
-          >
-            <PlusIcon /> Add Step
-          </button>
-          <button
             onClick={openAddGrade}
             className="flex items-center gap-2 rounded-xl bg-orange px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-orange/25 transition-all hover:bg-orange/90 hover:shadow-lg hover:shadow-orange/30 active:scale-[.98]"
           >
@@ -227,17 +203,7 @@ export default function SalaryGrades() {
                       const disabled = g.gradeNum === 33 && stepNum > 2
                       if (disabled) return <td key={stepNum} className="px-3 py-3 text-right font-mono text-xs text-ink/20">—</td>
                       if (!row) {
-                        return (
-                          <td key={stepNum} className="px-3 py-3 text-right">
-                            <button
-                              onClick={() => setEditing({ grade: g.grade, step: String(stepNum), salary: '' })}
-                              className="rounded-lg border border-dashed border-hairline px-2 py-1 font-mono text-xs text-ink/30 hover:border-orange/40 hover:bg-orange-soft hover:text-orange"
-                              title={`Add ${g.grade} Step ${stepNum}`}
-                            >
-                              + Add
-                            </button>
-                          </td>
-                        )
+                        return <td key={stepNum} className="px-3 py-3 text-right font-mono text-xs text-ink/20">—</td>
                       }
                       return (
                         <td key={stepNum} className="px-3 py-3 text-right">
@@ -252,8 +218,7 @@ export default function SalaryGrades() {
                       )
                     })}
                     <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <span className="font-mono text-[11px] text-ink/35">{g.count}/{g.expectedSteps}</span>
+                      <div className="flex items-center justify-end gap-1">
                         <button onClick={() => openEditGrade(g)} title="Update grade" className="rounded-lg p-2 text-ink/50 hover:bg-orange-soft hover:text-orange"><EditIcon /></button>
                         <button onClick={() => setConfirmDelGrade(g.grade)} title="Delete grade" className="rounded-lg p-2 text-ink/40 hover:bg-status-red/10 hover:text-status-red"><TrashIcon /></button>
                       </div>
@@ -268,7 +233,6 @@ export default function SalaryGrades() {
                             if (!row) return (
                               <span key={s} className="inline-flex items-center gap-2 rounded-xl border border-dashed border-hairline bg-white px-3 py-2 text-xs text-ink/40">
                                 <span className="font-mono font-semibold">Step {s}</span> <span className="text-ink/20">— empty</span>
-                                <button onClick={() => setEditing({ grade: g.grade, step: String(s), salary: '' })} className="ml-1 rounded-lg bg-orange px-2 py-1 text-[11px] font-semibold text-white hover:bg-orange/90">Add</button>
                               </span>
                             )
                             return (
