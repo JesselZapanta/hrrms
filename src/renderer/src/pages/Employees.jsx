@@ -14,7 +14,8 @@ const PAGE_SIZE = 10
 
 const money = (n) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(n) || 0)
 
-export default function Employees({ onOpenFolder }) {
+export default function Employees({ onOpenFolder, currentUser }) {
+  const isAdmin = currentUser?.role === 'admin'
   const [employees, setEmployees] = useState([])
   const [offices, setOffices] = useState([])
   const [salaryGrades, setSalaryGrades] = useState([])
@@ -183,7 +184,7 @@ export default function Employees({ onOpenFolder }) {
               <th className="px-5 py-3.5">Employee</th>
               <th className="px-5 py-3.5">Office</th>
               <th className="px-5 py-3.5">Employment Status</th>
-              <th className="px-5 py-3.5">Date Hired</th>
+              {!isAdmin && <th className="px-5 py-3.5">Date Hired</th>}
               <th className="px-5 py-3.5 text-right">Actions</th>
             </tr>
           </thead>
@@ -219,7 +220,7 @@ export default function Employees({ onOpenFolder }) {
                     {emp.status}
                   </span>
                 </td>
-                <td className="px-5 py-3.5 font-mono text-xs text-ink/60">{emp.date_hired || '—'}</td>
+                {!isAdmin && <td className="px-5 py-3.5 font-mono text-xs text-ink/60">{emp.date_hired || '—'}</td>}
                 <td className="px-5 py-3.5">
                   <div className="flex justify-end gap-1">
                     <button
@@ -249,7 +250,7 @@ export default function Employees({ onOpenFolder }) {
             ))}
             {pageRows.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-5 py-14 text-center text-sm text-ink/40">
+                <td colSpan={isAdmin ? 5 : 6} className="px-5 py-14 text-center text-sm text-ink/40">
                   {employees.length === 0 ? 'No employee records yet.' : 'No employees match your filters.'}
                 </td>
               </tr>
