@@ -70,7 +70,15 @@ export default function SalaryGrades() {
 
   const openAddGrade = () => {
     setBulkError('')
-    setBulk({ grade: '', steps: {} })
+    // Default to first grade that still has missing steps, or SG-1
+    let def = ''
+    for (let i = 1; i <= 33; i++) {
+      const g = `SG-${i}`
+      const found = grouped.find((x) => x.grade === g)
+      if (!found || found.count < found.expectedSteps) { def = g; break }
+    }
+    if (!def) def = 'SG-1'
+    setBulk({ grade: def, steps: {} })
   }
 
   const openEditGrade = (group) => {
