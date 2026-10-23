@@ -61,7 +61,7 @@ No test/lint/typecheck scripts exist. `npm run build` is the only verification g
 
 ## Release & auto-update
 - Branching: work on `dev` and merge to `main` via PR; `main` is the release branch. Any push to `main` (except README/docs-only changes) runs the release workflow.
-- Workflow: `.github/workflows/release.yml` bumps the minor version (`1.27.0` -> `1.28.0`), force-pushes tag `v<version>`, deletes any existing release, runs `npm run release`, then commits the bump back to `main`. The tag must exist before publish or GitHub returns 422.
+- Workflow: `.github/workflows/release.yml` bumps `max(package.json, latest GitHub release)` minor version (never reuses/downgrades tags), force-pushes tag `v<version>`, deletes all same-tag releases by ID (duplicates included, tag kept), runs `npm run release`, verifies exe+blockmap+`latest.yml` exist, then commits the bump back to `main` with `[skip ci]`. The tag must exist before publish or GitHub returns 422. Custom steps run under `shell: bash` (PowerShell mangles `|| true`).
 - Installed app only: `npm run dev` skips both the kill-switch and updater.
 - Kill switch: packaged launch reads `database/.status` and `package.json._hrrms` from `main` on GitHub, then bundled copies. `{"active":false}` leaves the splash locked and never opens the main window; remote values win, so don't push `active:false` carelessly.
 - Update check: auto-downloads, clears `localStorage`, then calls `quitAndInstall()`; `autoInstallOnAppQuit=false`. If no update is found or the check errors, the app opens anyway (7s fail-safe).
