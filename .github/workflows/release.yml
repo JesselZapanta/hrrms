@@ -122,16 +122,21 @@ jobs:
           HAVE=$(gh release view "$TAG" --json assets --jq ".assets[].name")
           echo "$HAVE"
           # NOTE: local dist files use spaces ("HRRMS Setup 1.31.0.exe") while
-          # uploaded assets use dashes ("HRRMS-Setup-1.31.0.exe") — glob them.
+          # uploaded assets use dashes — copy to dash names so a re-uploaded
+          # blockmap matches the URL electron-updater derives from the exe.
           EXE_FILE=$(ls dist/*.exe 2>/dev/null | head -n 1)
           MAP_FILE=$(ls dist/*.blockmap 2>/dev/null | head -n 1)
+          DASH_EXE="dist/HRRMS-Setup-${{ steps.bump.outputs.version }}.exe"
+          DASH_MAP="dist/HRRMS-Setup-${{ steps.bump.outputs.version }}.exe.blockmap"
+          [ -n "$EXE_FILE" ] && cp -f "$EXE_FILE" "$DASH_EXE"
+          [ -n "$MAP_FILE" ] && cp -f "$MAP_FILE" "$DASH_MAP"
           if ! echo "$HAVE" | grep -q "\.exe$"; then
-            echo "uploading missing exe: $EXE_FILE"
-            gh release upload "$TAG" "$EXE_FILE" --clobber
+            echo "uploading missing exe"
+            gh release upload "$TAG" "$DASH_EXE" --clobber
           fi
           if ! echo "$HAVE" | grep -q "blockmap"; then
-            echo "uploading missing blockmap: $MAP_FILE"
-            gh release upload "$TAG" "$MAP_FILE" --clobber
+            echo "uploading missing blockmap"
+            gh release upload "$TAG" "$DASH_MAP" --clobber
           fi
           if ! echo "$HAVE" | grep -q "latest.yml"; then
             echo "uploading missing latest.yml"
