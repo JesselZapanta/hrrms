@@ -93,6 +93,44 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run release
 
+      # electron-builder uploads exe + blockmap in parallel and each tries to
+      # create the release, sometimes ending with two same-tag releases
+      # (exe+latest.yml in one, blockmap in the other) — updater 404s then.
+      # Merge them back into one using the locally built dist/ files.
+      - name: Consolidate duplicate releases
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v${{ steps.bump.outputs.version }}"
+          IDS=$(gh api "repos/${{ github.repository }}/releases?per_page=100" --paginate --jq ".[] | select(.tag_name==\"$TAG\") | .id")
+          COUNT=$(echo "$IDS" | grep -c . || true)
+          echo "releases for $TAG: $COUNT"
+          if [ "$COUNT" -gt 1 ]; then
+            PRIMARY=$(gh api "repos/${{ github.repository }}/releases?per_page=100" --paginate --jq ".[] | select(.tag_name==\"$TAG\" and ((.assets | map(.name) | join(\",\")) | contains(\"latest.yml\"))) | .id" | head -n 1)
+            [ -z "$PRIMARY" ] && PRIMARY=$(echo "$IDS" | head -n 1)
+            echo "primary release id: $PRIMARY"
+            for ID in $IDS; do
+              if [ "$ID" != "$PRIMARY" ]; then
+                echo "deleting duplicate release id $ID"
+                gh api -X DELETE "repos/${{ github.repository }}/releases/$ID"
+              fi
+            done
+          fi
+          echo "--- dist contents ---"
+          ls -la dist/ | grep -i -E "exe|blockmap|latest" || true
+          HAVE=$(gh release view "$TAG" --json assets --jq ".assets[].name")
+          echo "$HAVE"
+          upload_if_missing() {
+            if ! echo "$HAVE" | grep -qF "$1"; then
+              echo "uploading missing $2"
+              gh release upload "$TAG" "$2" --clobber
+            fi
+          }
+          upload_if_missing "HRRMS-Setup-${{ steps.bump.outputs.version }}.exe" "dist/HRRMS-Setup-${{ steps.bump.outputs.version }}.exe"
+          upload_if_missing "blockmap" "dist/HRRMS-Setup-${{ steps.bump.outputs.version }}.exe.blockmap"
+          upload_if_missing "latest.yml" "dist/latest.yml"
+
       - name: Verify release assets
         shell: bash
         env:
