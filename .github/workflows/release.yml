@@ -121,15 +121,22 @@ jobs:
           ls -la dist/ | grep -i -E "exe|blockmap|latest" || true
           HAVE=$(gh release view "$TAG" --json assets --jq ".assets[].name")
           echo "$HAVE"
-          upload_if_missing() {
-            if ! echo "$HAVE" | grep -qF "$1"; then
-              echo "uploading missing $2"
-              gh release upload "$TAG" "$2" --clobber
-            fi
-          }
-          upload_if_missing "HRRMS-Setup-${{ steps.bump.outputs.version }}.exe" "dist/HRRMS-Setup-${{ steps.bump.outputs.version }}.exe"
-          upload_if_missing "blockmap" "dist/HRRMS-Setup-${{ steps.bump.outputs.version }}.exe.blockmap"
-          upload_if_missing "latest.yml" "dist/latest.yml"
+          # NOTE: local dist files use spaces ("HRRMS Setup 1.31.0.exe") while
+          # uploaded assets use dashes ("HRRMS-Setup-1.31.0.exe") — glob them.
+          EXE_FILE=$(ls dist/*.exe 2>/dev/null | head -n 1)
+          MAP_FILE=$(ls dist/*.blockmap 2>/dev/null | head -n 1)
+          if ! echo "$HAVE" | grep -q "\.exe$"; then
+            echo "uploading missing exe: $EXE_FILE"
+            gh release upload "$TAG" "$EXE_FILE" --clobber
+          fi
+          if ! echo "$HAVE" | grep -q "blockmap"; then
+            echo "uploading missing blockmap: $MAP_FILE"
+            gh release upload "$TAG" "$MAP_FILE" --clobber
+          fi
+          if ! echo "$HAVE" | grep -q "latest.yml"; then
+            echo "uploading missing latest.yml"
+            gh release upload "$TAG" "dist/latest.yml" --clobber
+          fi
 
       - name: Verify release assets
         shell: bash
