@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  /* Legacy tokens (kept for not-yet-restyled screens) */
   --color-navy: #1b2c63;
   --color-navy-deep: #14214b;
   --color-orange: #e85b18;
@@ -14,7 +15,44 @@
   --color-status-amber: #9a7b2f;
   --color-status-red: #a34a3a;
 
-  --font-heading: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  /* Redesign tokens (HRRMS_DESIGN_SPEC.md §3) */
+  --color-navy-900: #0b2a5b;
+  --color-navy-800: #11347a;
+  --color-navy-700: #1b4b9b;
+  --color-navy-btn: #14295b;
+  --color-accent: #f7861e;
+  --color-accent-dark: #ea6a0a;
+  --color-accent-soft: #fff1e0;
+
+  --color-canvas: #f3f6fb;
+  --color-card: #ffffff;
+  --color-border: #e3e8f0;
+  --color-row-hover: #f7f9fc;
+
+  --color-text-primary: #12213f;
+  --color-text-secondary: #5b6b86;
+  --color-text-muted: #8a97ad;
+
+  --color-success-bg: #d8f3dc;
+  --color-success-text: #1e7a3c;
+  --color-success-bar: #12a150;
+  --color-warning-bg: #fff1cc;
+  --color-warning-text: #c77700;
+  --color-warning-bar: #f7861e;
+  --color-danger-bg: #fde2e2;
+  --color-danger-text: #c62828;
+  --color-info-bg: #dcebff;
+  --color-info-text: #1d5fd1;
+
+  --color-tile-blue: #1e6be6;
+  --color-tile-green: #19a55a;
+  --color-tile-orange: #f7861e;
+  --color-tile-red: #e5383b;
+  --color-tile-purple: #7b3fe4;
+  --color-tile-yellow: #f4b400;
+  --color-tile-slate: #6b7c99;
+
+  --font-heading: "Poppins", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
@@ -159,4 +197,42 @@ button:disabled {
 .folder-tab-panel {
   clip-path: polygon(0 0, 100% 0, 100% 100%, 38% 100%, 30% 46%, 0 46%);
   border-top: 1px solid rgba(250, 248, 244, 0.08);
+}
+
+/* Redesign system (HRRMS_DESIGN_SPEC.md) */
+.gov-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(15, 40, 90, 0.08);
+}
+
+.gov-table thead th {
+  background: #f1f4f9;
+}
+
+.gov-table tbody tr:hover {
+  background: var(--color-row-hover);
+}
+
+@keyframes progress-fill {
+  from {
+    width: 0;
+  }
+}
+.animate-progress {
+  animation: progress-fill 0.5s ease-out both;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 1.6s ease-in-out infinite;
 }
