@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Modal } from '../components/Modal.jsx'
 import Select from '../components/Select.jsx'
+import Swoosh from '../components/Swoosh.jsx'
 import { StatusDot } from '../components/StatusDot.jsx'
 import Toast from '../components/Toast.jsx'
 
@@ -83,58 +84,87 @@ export default function Offices() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-8 py-8">
+    <div className="mx-auto w-full">
       {toast && <Toast message={toast.message} tone={toast.tone} onClose={() => setToast(null)} />}
 
-      {/* Toolbar */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative">
-            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/35">
-              <SearchIcon />
+      {/* Colorful page header */}
+      <div className="relative mb-4 overflow-hidden rounded-2xl bg-gradient-to-r from-navy-900 via-navy-800 to-navy-700 shadow-lg shadow-navy-900/20 lg:mb-5">
+        <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-accent/25 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 right-48 h-56 w-56 rounded-full bg-white/[0.06] blur-2xl" />
+        <Swoosh className="pointer-events-none absolute -bottom-10 right-4 h-36 w-36 opacity-30" />
+        <div className="relative z-10 p-4 lg:p-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] bg-white/10 text-white">
+              <BuildingIcon />
             </span>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search offices…"
-              className="w-80 rounded-xl border border-hairline bg-white py-2.5 pl-10 pr-3.5 text-sm outline-none transition-all placeholder:text-ink/30 focus:border-orange focus:ring-2 focus:ring-orange/20"
-            />
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-[18px] font-bold leading-tight text-white lg:text-[22px]">
+                Offices
+              </h1>
+              <p className="mt-0.5 text-[11px] text-white/60 lg:text-[12px]">
+                City Offices Directory · {filtered.length} on record
+              </p>
+            </div>
+            <div className="flex shrink-0 gap-2">
+              <span className="rounded-xl bg-white/10 px-3 py-1.5 text-center">
+                <span className="block font-mono text-[15px] font-bold leading-none text-white lg:text-[17px]">{offices.length}</span>
+                <span className="mt-0.5 block font-mono text-[9px] uppercase tracking-wider text-white/60">Total</span>
+              </span>
+              <span className="rounded-xl bg-white/10 px-3 py-1.5 text-center">
+                <span className="block font-mono text-[15px] font-bold leading-none text-white lg:text-[17px]">{offices.filter((o) => o.status === 'active').length}</span>
+                <span className="mt-0.5 block font-mono text-[9px] uppercase tracking-wider text-white/60">Active</span>
+              </span>
+              <span className="rounded-xl bg-white/10 px-3 py-1.5 text-center">
+                <span className="block font-mono text-[15px] font-bold leading-none text-white lg:text-[17px]">{offices.filter((o) => o.status !== 'active').length}</span>
+                <span className="mt-0.5 block font-mono text-[9px] uppercase tracking-wider text-white/60">Inactive</span>
+              </span>
+            </div>
           </div>
-          <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-hairline bg-white py-2.5 pl-3 pr-2.5 text-sm transition-all focus-within:border-orange focus-within:ring-2 focus-within:ring-orange/20">
-            <span className="text-ink/35">
-              <StatusIcon />
-            </span>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-ink/40">Status</span>
-            <Select
-              variant="chip"
-              value={statusFilter}
-              onChange={setStatusFilter}
-              options={[
-                { value: 'all', label: 'All statuses' },
-                { value: 'active', label: 'Active' },
-                { value: 'inactive', label: 'Inactive' }
-              ]}
-            />
-          </label>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-xs text-ink/40">{filtered.length} offices on record</span>
-          <button
-            onClick={() => setEditing({ ...EMPTY })}
-            className="flex items-center gap-2 rounded-xl bg-orange px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-orange/25 transition-all hover:bg-orange/90 hover:shadow-lg hover:shadow-orange/30 active:scale-[.98]"
-          >
-            <PlusIcon />
-            Add Office
-          </button>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-52">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary">
+                <SearchIcon />
+              </span>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search offices…"
+                className="w-full rounded-xl border border-transparent bg-white py-2.5 pl-10 pr-3.5 text-sm text-text-primary outline-none transition-all placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/40"
+              />
+            </div>
+            <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-white py-2.5 pl-3 pr-2.5 text-sm transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20">
+              <span className="text-text-secondary">
+                <StatusIcon />
+              </span>
+              <span className="font-mono text-[10px] uppercase tracking-wider text-text-secondary">Status</span>
+              <Select
+                variant="chip"
+                value={statusFilter}
+                onChange={setStatusFilter}
+                options={[
+                  { value: 'all', label: 'All statuses' },
+                  { value: 'active', label: 'Active' },
+                  { value: 'inactive', label: 'Inactive' }
+                ]}
+              />
+            </label>
+            <button
+              onClick={() => setEditing({ ...EMPTY })}
+              className="flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-accent/30 transition-all hover:bg-accent-dark active:scale-[.98]"
+            >
+              <PlusIcon />
+              Add Office
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-2xl border border-hairline bg-white shadow-sm">
+      <div className="gov-card overflow-hidden">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-hairline bg-navy/[0.04] font-mono text-[10px] uppercase tracking-[1.5px] text-ink/45">
-              <th className="w-14 cursor-pointer select-none px-5 py-3.5 hover:text-ink" onClick={() => toggleSort('id')}>
+            <tr className="border-b border-border bg-[#F1F4F9] text-[13px] font-semibold text-text-primary">
+              <th className="w-14 cursor-pointer select-none px-5 py-3.5 hover:text-text-primary" onClick={() => toggleSort('id')}>
                 <span className="inline-flex items-center gap-1">ID {sortBy === 'id' && <SortArrow dir={sortDir} />}</span>
               </th>
               <th className="px-5 py-3.5">Name</th>
@@ -143,18 +173,18 @@ export default function Offices() {
               <th className="px-5 py-3.5 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-hairline">
+          <tbody className="divide-y divide-border">
             {pageRows.map((office) => (
-              <tr key={office.id} className="group transition-colors hover:bg-paper/70">
-                <td className="px-5 py-3.5 font-mono text-xs text-ink/60">#{office.id}</td>
+              <tr key={office.id} className="group transition-colors hover:bg-row-hover">
+                <td className="px-5 py-3.5 font-mono text-xs text-text-secondary">#{office.id}</td>
                 <td className="px-5 py-3.5">
-                  <span className="font-medium text-ink">{office.name}</span>
+                  <span className="font-medium text-text-primary">{office.name}</span>
                 </td>
-                <td className="max-w-md truncate px-5 py-3.5 text-ink/60">{office.description || '—'}</td>
+                <td className="max-w-md truncate px-5 py-3.5 text-text-secondary">{office.description || '—'}</td>
                 <td className="px-5 py-3.5">
                   <span
                     className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${
-                      office.status === 'active' ? 'bg-status-green/10 text-status-green' : 'bg-status-red/10 text-status-red'
+                      office.status === 'active' ? 'bg-success-text/10 text-success-text' : 'bg-danger-text/10 text-danger-text'
                     }`}
                   >
                     <StatusDot status={office.status} />
@@ -166,14 +196,14 @@ export default function Offices() {
                     <button
                       onClick={() => setEditing({ ...office })}
                       title="Edit"
-                      className="rounded-lg p-2 text-ink/50 transition-colors hover:bg-orange-soft hover:text-orange"
+                      className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-accent-soft hover:text-accent"
                     >
                       <EditIcon />
                     </button>
                     <button
                       onClick={() => setConfirmDel(office)}
                       title="Delete"
-                      className="rounded-lg p-2 text-ink/50 transition-colors hover:bg-status-red/10 hover:text-status-red"
+                      className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-danger-text/10 hover:text-danger-text"
                     >
                       <TrashIcon />
                     </button>
@@ -183,7 +213,7 @@ export default function Offices() {
             ))}
             {pageRows.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-14 text-center text-sm text-ink/40">
+                <td colSpan={5} className="px-5 py-14 text-center text-sm text-text-secondary">
                   {offices.length === 0 ? 'No offices yet. Add your first office.' : 'No offices match your filters.'}
                 </td>
               </tr>
@@ -194,7 +224,7 @@ export default function Offices() {
 
       {/* Pagination */}
       <div className="mt-4 flex items-center justify-between">
-        <span className="font-mono text-xs text-ink/40">
+        <span className="font-mono text-xs text-text-secondary">
           {filtered.length === 0 ? 'No results' : `Showing ${from}–${to} of ${filtered.length}`}
         </span>
         {totalPages > 1 && (
@@ -202,7 +232,7 @@ export default function Offices() {
             <button
               onClick={() => setPage(safePage - 1)}
               disabled={safePage === 1}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-hairline bg-white text-ink/60 transition-colors hover:bg-paper-dark disabled:opacity-40"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-white text-text-secondary transition-colors hover:bg-row-hover disabled:opacity-40"
             >
               <ChevronIcon dir="left" />
             </button>
@@ -212,8 +242,8 @@ export default function Offices() {
                 onClick={() => setPage(n)}
                 className={`h-8 min-w-8 rounded-lg px-2 font-mono text-xs transition-colors ${
                   n === safePage
-                    ? 'bg-orange font-semibold text-white shadow-md shadow-orange/25'
-                    : 'border border-hairline bg-white text-ink/60 hover:bg-paper-dark'
+                    ? 'bg-navy-900 font-semibold text-white shadow-md shadow-navy-900/25'
+                    : 'border border-border bg-white text-text-secondary hover:bg-row-hover'
                 }`}
               >
                 {n}
@@ -222,7 +252,7 @@ export default function Offices() {
             <button
               onClick={() => setPage(safePage + 1)}
               disabled={safePage === totalPages}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-hairline bg-white text-ink/60 transition-colors hover:bg-paper-dark disabled:opacity-40"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-white text-text-secondary transition-colors hover:bg-row-hover disabled:opacity-40"
             >
               <ChevronIcon dir="right" />
             </button>
@@ -263,21 +293,21 @@ export default function Offices() {
               />
             </Field>
             {error && (
-              <div className="rounded-lg border border-status-red/30 bg-status-red/5 px-3 py-2 text-xs text-status-red">
+              <div className="rounded-lg border border-danger-text/30 bg-danger-bg/50 px-3 py-2 text-xs text-danger-text">
                 {error}
               </div>
             )}
-            <div className="flex items-center justify-end gap-2 border-t border-hairline pt-4">
+            <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
               <button
                 type="button"
                 onClick={() => setEditing(null)}
-                className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 transition-colors hover:bg-paper-dark"
+                className="rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-row-hover"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-1.5 rounded-lg bg-orange px-4 py-2 text-xs font-semibold text-white shadow-md shadow-orange/25 transition-all hover:bg-orange/90 active:scale-[.98]"
+                className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white shadow-md shadow-accent/25 transition-all hover:bg-accent-dark active:scale-[.98]"
               >
                 <SaveIcon />
                 Save Office
@@ -289,19 +319,19 @@ export default function Offices() {
 
       {confirmDel && (
         <Modal title="Delete office" onClose={() => setConfirmDel(null)} compact>
-          <p className="text-sm text-ink/70">
+          <p className="text-sm text-text-secondary">
             Delete <b>{confirmDel.name}</b>? This permanently removes the office from the registry.
           </p>
-          <div className="mt-5 flex items-center justify-end gap-2 border-t border-hairline pt-4">
+          <div className="mt-5 flex items-center justify-end gap-2 border-t border-border pt-4">
             <button
               onClick={() => setConfirmDel(null)}
-              className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 hover:bg-paper-dark"
+              className="rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-text-secondary hover:bg-row-hover"
             >
               Cancel
             </button>
             <button
               onClick={remove}
-              className="rounded-lg bg-status-red px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
+              className="rounded-lg bg-danger-text px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
             >
               Delete
             </button>
@@ -313,13 +343,13 @@ export default function Offices() {
 }
 
 const inputCls =
-  'w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-orange focus:ring-1 focus:ring-orange'
+  'w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-accent focus:ring-1 focus:ring-accent'
 
 function Field({ label, required, children }) {
   return (
     <div>
-      <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-ink/60">
-        {label} {required && <span className="text-orange">*</span>}
+      <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-text-secondary">
+        {label} {required && <span className="text-accent">*</span>}
       </label>
       {children}
     </div>
@@ -331,6 +361,21 @@ function SearchIcon() {
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  )
+}
+
+function BuildingIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="2" width="16" height="20" rx="1.5" />
+      <path d="M9 22v-4h6v4" />
+      <line x1="8" y1="6" x2="10" y2="6" />
+      <line x1="8" y1="10" x2="10" y2="10" />
+      <line x1="8" y1="14" x2="10" y2="14" />
+      <line x1="14" y1="6" x2="16" y2="6" />
+      <line x1="14" y1="10" x2="16" y2="10" />
+      <line x1="14" y1="14" x2="16" y2="14" />
     </svg>
   )
 }

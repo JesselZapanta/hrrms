@@ -5,9 +5,9 @@ export default function DateInput({ value, onChange, className = '' }) {
         type="date"
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-orange focus:ring-1 focus:ring-orange [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-2.5 [&::-webkit-calendar-picker-indicator]:h-4 [&::-webkit-calendar-picker-indicator]:w-4 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+        className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-primary outline-none transition-colors focus:border-accent focus:ring-1 focus:ring-accent [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-2.5 [&::-webkit-calendar-picker-indicator]:h-4 [&::-webkit-calendar-picker-indicator]:w-4 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
       />
-      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ink/35">
+      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary">
         <CalendarIcon />
       </span>
     </div>

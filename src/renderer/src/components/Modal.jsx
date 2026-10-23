@@ -3,19 +3,19 @@ import { useState } from 'react'
 export function Modal({ title, onClose, children, wide, compact }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-navy/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-900/40 p-4"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
     >
       <div
-        className={`flex max-h-[90vh] w-full flex-col ${wide ? 'max-w-3xl' : compact ? 'max-w-md' : 'max-w-lg'} overflow-hidden rounded-2xl border border-hairline bg-paper shadow-2xl shadow-navy/20 toast-in`}
+        className={`flex max-h-[90vh] w-full flex-col ${wide ? 'max-w-3xl' : compact ? 'max-w-md' : 'max-w-lg'} overflow-hidden rounded-2xl border border-border bg-white shadow-2xl shadow-navy-900/20 toast-in`}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-hairline bg-white px-5 py-3.5">
-          <h3 className="font-heading text-base font-semibold text-navy">{title}</h3>
+        <div className="flex shrink-0 items-center justify-between border-b border-border bg-white px-5 py-3.5">
+          <h3 className="font-heading text-base font-semibold text-navy-800">{title}</h3>
           <button
             onClick={onClose}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-ink/50 transition-colors hover:bg-paper-dark hover:text-ink"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-row-hover hover:text-text-primary"
           >
             <CloseIcon />
           </button>

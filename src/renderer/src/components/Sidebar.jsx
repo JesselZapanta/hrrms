@@ -16,27 +16,22 @@ export default function Sidebar({ user, view, onNavigate, version }) {
   )
 
   return (
-    <aside className="relative flex w-[260px] shrink-0 flex-col overflow-hidden bg-navy-900 text-white">
-      {/* Designer background: navy gradient + City Hall + swoosh at the bottom */}
-      <img
-        src={sidebarBgUrl}
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-auto w-full"
-      />
-
-      <nav className="relative z-10 flex-1 space-y-1.5 overflow-y-auto px-2.5 py-4">
+    <aside
+      className="flex w-[220px] shrink-0 flex-col bg-navy-900 text-white lg:w-[260px]"
+      style={{ background: `#0B2A5B url('${sidebarBgUrl}') center 75% / 100% auto no-repeat` }}
+    >
+      <nav className="flex-1 space-y-1.5 overflow-y-auto px-2.5 py-4">
         {nav.map((item) => {
           const active = view === item.key
           return (
             <button
               key={item.key}
               onClick={() => onNavigate(item.key)}
-              className={`flex w-full items-center gap-3 rounded-[10px] px-5 text-left text-[15px] transition-all duration-150 ${
+              className={`flex w-full items-center gap-2.5 rounded-[10px] px-3 text-left text-[12px] transition-all duration-150 lg:px-4 lg:text-[13px] ${
                 active
                   ? 'bg-gradient-to-r from-accent to-accent-dark font-semibold text-white shadow-[0_4px_14px_rgba(247,134,30,0.45)]'
                   : 'font-normal text-white/90 hover:bg-white/10'
-              } h-[50px]`}
+              } h-[38px] lg:h-[44px]`}
             >
               <span className="flex h-5 w-5 shrink-0 items-center justify-center">{item.icon}</span>
               {item.label}
@@ -45,19 +40,21 @@ export default function Sidebar({ user, view, onNavigate, version }) {
         })}
       </nav>
 
-      {/* Footer text over the building photo (last ~100px) */}
-      <div className="relative z-10 px-5 pb-3 pt-16 text-center">
-        <div className="text-[14px] font-bold uppercase tracking-wide text-white">
-          City Council Office
-        </div>
-        <div className="text-[14px] font-bold uppercase tracking-wide text-white">
-          Ozamiz City
-        </div>
-        <div className="mt-1.5 text-[9px] uppercase tracking-[2px] text-white/70">
-          People • Service • Good Governance
+      {/* Footer text over the bg's building zone */}
+      <div className="relative z-10 mx-2.5 mb-2 lg:mx-3">
+        <div className="rounded-xl border border-white/15 bg-white/10 px-2 py-2 text-center backdrop-blur-sm lg:px-3">
+          <div className="text-[10px] font-bold uppercase leading-tight tracking-wide text-white lg:text-[11px]">
+            City Council Office
+          </div>
+          <div className="text-[10px] font-bold uppercase leading-tight tracking-wide text-white lg:text-[11px]">
+            Ozamiz City
+          </div>
+          <div className="mt-1 text-[7px] uppercase tracking-[1.5px] text-white/70 lg:text-[8px]">
+            People • Service • Good Governance
+          </div>
         </div>
       </div>
-      <div className="relative z-10 px-5 pb-3 text-center text-[10px] tracking-[1.5px] text-white/35">
+      <div className="px-4 pb-2 text-[9px] tracking-[1.5px] text-white/35 lg:px-5 lg:pb-3 lg:text-[10px]">
         V{version || '…'} • AUTO-UPDATE
       </div>
     </aside>

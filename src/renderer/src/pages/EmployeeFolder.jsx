@@ -85,31 +85,31 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-8 py-8">
+    <div className="mx-auto w-full">
       {toast && <Toast message={toast.message} tone={toast.tone} onClose={() => setToast(null)} />}
 
       <button
         onClick={onBack}
-        className="mb-4 flex items-center gap-1.5 rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-medium text-ink/60 transition-colors hover:border-orange hover:text-orange"
+        className="mb-4 flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:border-accent hover:text-accent"
       >
         <ChevronIcon dir="left" />
         Back to employees
       </button>
 
       {/* Employee summary */}
-      <div className="mb-6 overflow-hidden rounded-2xl border border-hairline bg-white shadow-sm">
-        <div className="h-14 bg-navy" />
+      <div className="mb-6 gov-card overflow-hidden">
+        <div className="h-14 bg-gradient-to-r from-navy-900 to-navy-700" />
         <div className="px-6 pb-6">
           <div className="-mt-7 flex flex-wrap items-end justify-between gap-4">
             <div className="flex items-end gap-4">
               <Avatar emp={employee} />
               <div className="min-w-0">
-                <h1 className="truncate font-heading text-xl font-bold text-navy">{employee.complete_name}</h1>
-                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink/70">
+                <h1 className="truncate font-heading text-xl font-bold text-navy-800">{employee.complete_name}</h1>
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-secondary">
                   <span>{employee.position}</span>
                   {employee.office && (
                     <>
-                      <span className="text-hairline">·</span>
+                      <span className="text-text-muted">·</span>
                       <span>{employee.office}</span>
                     </>
                   )}
@@ -125,7 +125,7 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
                 <StatusDot status={employee.status} />
                 {employee.status.replace('_', ' ')}
               </span>
-              <span className="font-mono text-[11px] text-ink/40">
+              <span className="font-mono text-[11px] text-text-secondary">
                 {files.length} document{files.length === 1 ? '' : 's'} · {formatSize(totalSize)}
               </span>
             </div>
@@ -151,7 +151,7 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
 
       {/* Category folder tabs */}
       <div className="mb-6">
-        <div className="grid grid-cols-3 gap-2 border-b border-hairline">
+        <div className="grid grid-cols-3 gap-2 border-b border-border">
           {categories.map((cat, idx) => {
             const c = TAB_COLORS[idx % TAB_COLORS.length]
             const isActive = cat.id === activeCat
@@ -161,7 +161,7 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
                 key={cat.id}
                 onClick={() => setActiveCat(cat.id)}
                 className={`folder-tab flex h-16 flex-col items-center justify-center gap-1.5 px-3 text-sm leading-none transition-all ${
-                  isActive ? `${c.fill} font-semibold` : 'border border-b-0 border-hairline bg-white text-ink/60 hover:bg-paper'
+                  isActive ? `${c.fill} font-semibold` : 'border border-b-0 border-border bg-white text-text-secondary hover:bg-paper'
                 }`}
               >
                 {!isActive && <span className={`absolute inset-x-0 top-0 h-1 ${c.edge}`} />}
@@ -190,22 +190,22 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
             return (
               <section
                 key={sub.id}
-                className="overflow-hidden rounded-2xl border border-hairline bg-white shadow-sm transition-shadow hover:shadow-md hover:shadow-navy/5"
+                className="gov-card overflow-hidden transition-shadow hover:shadow-md hover:shadow-navy-900/5"
               >
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline bg-paper px-5 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-row-hover/70 px-5 py-3">
                   <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-navy/[0.06] font-mono text-[11px] text-navy">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-info-bg/60 font-mono text-[11px] text-navy-800">
                       {String(i + 1).padStart(2, '0')}
                     </span>
-                    <h3 className="truncate text-sm font-semibold text-navy">{sub.name}</h3>
-                    <span className="rounded-full bg-white px-2 py-0.5 font-mono text-[10px] text-ink/45">
+                    <h3 className="truncate text-sm font-semibold text-navy-800">{sub.name}</h3>
+                    <span className="rounded-full bg-white px-2 py-0.5 font-mono text-[10px] text-text-secondary">
                       {list.length}
                     </span>
                   </div>
                   <button
                     onClick={() => handleUpload(sub.id)}
                     disabled={uploading}
-                    className="flex items-center gap-1.5 rounded-lg bg-orange px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-orange/25 transition-all hover:bg-orange/90 active:scale-[.98] disabled:opacity-50"
+                    className="flex items-center gap-1.5 rounded-lg bg-navy-btn px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-navy-900/20 transition-all hover:brightness-110 active:scale-[.98] disabled:opacity-50"
                   >
                     <PlusIcon />
                     Add file
@@ -213,48 +213,48 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
                 </div>
 
                 {list.length === 0 ? (
-                  <div className="px-5 py-8 text-center text-sm text-ink/40">
+                  <div className="px-5 py-8 text-center text-sm text-text-secondary">
                     No documents filed under this subcategory.
                   </div>
                 ) : (
-                  <ul className="divide-y divide-hairline">
+                  <ul className="divide-y divide-border">
                     {list.map((f) => (
-                      <li key={f.id} className="group flex items-center gap-4 px-5 py-3 transition-colors hover:bg-paper/60">
+                      <li key={f.id} className="group flex items-center gap-4 px-5 py-3 transition-colors hover:bg-row-hover">
                         <FileTypeIcon fileName={f.file_name} />
                         <button
                           className="min-w-0 flex-1 text-left"
                           onClick={() => window.api.files.openPath(f.id)}
                           title="Open document"
                         >
-                          <div className="truncate text-sm font-medium text-ink transition-colors group-hover:text-orange">
+                          <div className="truncate text-sm font-medium text-text-primary transition-colors group-hover:text-accent">
                             {f.file_name}
                           </div>
-                          <div className="font-mono text-[11px] text-ink/40">
+                          <div className="font-mono text-[11px] text-text-secondary">
                             {f.category_name} › {f.subcategory_name} · {f.created_at.slice(0, 10)}
                           </div>
                         </button>
-                        <span className="hidden shrink-0 font-mono text-[11px] text-ink/40 sm:block">
+                        <span className="hidden shrink-0 font-mono text-[11px] text-text-secondary sm:block">
                           {formatSize(f.file_size)}
                         </span>
                         <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                           <button
                             onClick={() => window.api.files.openPath(f.id)}
                             title="Open"
-                            className="rounded-lg p-2 text-ink/50 transition-colors hover:bg-orange-soft hover:text-orange"
+                            className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-accent-soft hover:text-accent"
                           >
                             <OpenIcon />
                           </button>
                           <button
                             onClick={() => setRenaming({ id: f.id, name: f.file_name })}
                             title="Rename"
-                            className="rounded-lg p-2 text-ink/50 transition-colors hover:bg-navy/5 hover:text-navy"
+                            className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-info-bg hover:text-navy-800"
                           >
                             <EditIcon />
                           </button>
                           <button
                             onClick={() => setConfirmDel(f)}
                             title="Delete"
-                            className="rounded-lg p-2 text-ink/50 transition-colors hover:bg-status-red/10 hover:text-status-red"
+                            className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-danger-text/10 hover:text-danger-text"
                           >
                             <TrashIcon />
                           </button>
@@ -268,7 +268,7 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
           })}
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-hairline bg-white px-5 py-10 text-center text-sm text-ink/40">
+        <div className="rounded-2xl border border-dashed border-border bg-white px-5 py-10 text-center text-sm text-text-secondary">
           No categories available. Contact the administrator.
         </div>
       )}
@@ -285,17 +285,17 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
                 required
               />
             </Field>
-            <div className="flex items-center justify-end gap-2 border-t border-hairline pt-4">
+            <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
               <button
                 type="button"
                 onClick={() => setRenaming(null)}
-                className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 transition-colors hover:bg-paper-dark"
+                className="rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-row-hover"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-1.5 rounded-lg bg-orange px-4 py-2 text-xs font-semibold text-white shadow-md shadow-orange/25 transition-all hover:bg-orange/90 active:scale-[.98]"
+                className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white shadow-md shadow-accent/25 transition-all hover:bg-accent-dark active:scale-[.98]"
               >
                 <SaveIcon />
                 Save
@@ -308,26 +308,26 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
       {confirmDel && (
         <Modal title="Delete document" onClose={() => setConfirmDel(null)} compact>
           <div className="flex items-center gap-4">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-status-red/10 text-status-red">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-danger-text/10 text-danger-text">
               <TrashIcon />
             </span>
             <div>
-              <div className="text-sm font-semibold text-ink">Delete permanently?</div>
-              <p className="mt-0.5 text-xs text-ink/50">
+              <div className="text-sm font-semibold text-text-primary">Delete permanently?</div>
+              <p className="mt-0.5 text-xs text-text-secondary">
                 <b>{confirmDel.file_name}</b> will be removed from this folder.
               </p>
             </div>
           </div>
-          <div className="mt-5 flex items-center justify-end gap-2 border-t border-hairline pt-4">
+          <div className="mt-5 flex items-center justify-end gap-2 border-t border-border pt-4">
             <button
               onClick={() => setConfirmDel(null)}
-              className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 transition-colors hover:bg-paper-dark"
+              className="rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-row-hover"
             >
               Cancel
             </button>
             <button
               onClick={removeFile}
-              className="rounded-lg bg-status-red px-4 py-2 text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-[.98]"
+              className="rounded-lg bg-danger-text px-4 py-2 text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-[.98]"
             >
               Delete
             </button>
@@ -339,52 +339,52 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
 }
 
 const inputCls =
-  'w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-orange focus:ring-1 focus:ring-orange'
+  'w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-accent focus:ring-1 focus:ring-accent'
 
 const TAB_COLORS = [
   {
-    fill: 'bg-orange text-white shadow-lg shadow-orange/30',
-    edge: 'bg-orange',
-    icon: 'text-orange',
-    badge: 'bg-orange/15 text-orange',
+    fill: 'bg-accent text-white shadow-lg shadow-accent/30',
+    edge: 'bg-accent',
+    icon: 'text-accent',
+    badge: 'bg-accent/15 text-accent',
   },
   {
-    fill: 'bg-navy text-white shadow-lg shadow-navy/30',
-    edge: 'bg-navy',
-    icon: 'text-navy',
-    badge: 'bg-navy/10 text-navy',
+    fill: 'bg-navy-800 text-white shadow-lg shadow-navy-900/30',
+    edge: 'bg-navy-800',
+    icon: 'text-navy-800',
+    badge: 'bg-info-bg text-navy-800',
   },
   {
-    fill: 'bg-status-green text-white shadow-lg shadow-status-green/30',
-    edge: 'bg-status-green',
-    icon: 'text-status-green',
-    badge: 'bg-status-green/15 text-status-green',
+    fill: 'bg-success-text text-white shadow-lg shadow-success-text/30',
+    edge: 'bg-success-text',
+    icon: 'text-success-text',
+    badge: 'bg-success-text/15 text-success-text',
   },
   {
-    fill: 'bg-status-amber text-white shadow-lg shadow-status-amber/30',
-    edge: 'bg-status-amber',
-    icon: 'text-status-amber',
-    badge: 'bg-status-amber/15 text-status-amber',
+    fill: 'bg-warning-text text-white shadow-lg shadow-warning-text/30',
+    edge: 'bg-warning-text',
+    icon: 'text-warning-text',
+    badge: 'bg-warning-text/15 text-warning-text',
   },
   {
-    fill: 'bg-status-red text-white shadow-lg shadow-status-red/30',
-    edge: 'bg-status-red',
-    icon: 'text-status-red',
-    badge: 'bg-status-red/15 text-status-red',
+    fill: 'bg-danger-text text-white shadow-lg shadow-danger-text/30',
+    edge: 'bg-danger-text',
+    icon: 'text-danger-text',
+    badge: 'bg-danger-text/15 text-danger-text',
   },
   {
-    fill: 'bg-navy-deep text-white shadow-lg shadow-navy-deep/30',
-    edge: 'bg-navy-deep',
-    icon: 'text-navy',
-    badge: 'bg-navy/10 text-navy',
+    fill: 'bg-navy-700 text-white shadow-lg shadow-navy-700/30',
+    edge: 'bg-navy-700',
+    icon: 'text-navy-800',
+    badge: 'bg-info-bg text-navy-800',
   },
 ]
 
 function Field({ label, required, children }) {
   return (
     <div>
-      <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-ink/60">
-        {label} {required && <span className="text-orange">*</span>}
+      <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-text-secondary">
+        {label} {required && <span className="text-accent">*</span>}
       </label>
       {children}
     </div>
@@ -393,9 +393,9 @@ function Field({ label, required, children }) {
 
 function InfoTile({ label, value, mono, className = '' }) {
   return (
-    <div className={`rounded-xl bg-paper px-3.5 py-2.5 ${className}`}>
-      <div className="font-mono text-[10px] uppercase tracking-wider text-ink/40">{label}</div>
-      <div className={`mt-1 truncate text-sm text-ink/80 ${mono ? 'font-mono text-xs' : ''}`}>
+    <div className={`rounded-xl bg-row-hover px-3.5 py-2.5 ${className}`}>
+      <div className="font-mono text-[10px] uppercase tracking-wider text-text-secondary">{label}</div>
+      <div className={`mt-1 truncate text-sm text-text-primary ${mono ? 'font-mono text-xs' : ''}`}>
         {value || '—'}
       </div>
     </div>
@@ -404,11 +404,11 @@ function InfoTile({ label, value, mono, className = '' }) {
 
 function statusCls(status) {
   switch (status) {
-    case 'permanent': return 'bg-status-green/10 text-status-green'
-    case 'job_order': return 'bg-status-amber/10 text-status-amber'
-    case 'contract_of_service': return 'bg-navy/10 text-navy'
-    case 'inactive': return 'bg-status-red/10 text-status-red'
-    default: return 'bg-ink/5 text-ink/45'
+    case 'permanent': return 'bg-success-text/10 text-success-text'
+    case 'job_order': return 'bg-warning-text/10 text-warning-text'
+    case 'contract_of_service': return 'bg-info-bg text-navy-800'
+    case 'inactive': return 'bg-danger-text/10 text-danger-text'
+    default: return 'bg-row-hover text-text-secondary'
   }
 }
 
@@ -423,7 +423,7 @@ function Avatar({ emp }) {
     )
   }
   return (
-    <span className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border-4 border-white bg-orange-soft font-heading text-2xl font-bold text-orange shadow-md">
+    <span className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border-4 border-white bg-accent-soft font-heading text-2xl font-bold text-accent shadow-md">
       {initials(emp?.complete_name)}
     </span>
   )
@@ -537,10 +537,10 @@ function PptIcon() {
 
 function FileTypeIcon({ fileName }) {
   const ext = String(fileName || '').split('.').pop()?.toLowerCase() || ''
-  if (['doc', 'docx'].includes(ext)) return <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy/10 text-navy"><WordIcon /></span>
-  if (['xls', 'xlsx'].includes(ext)) return <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-status-green/10 text-status-green"><ExcelIcon /></span>
-  if (['ppt', 'pptx'].includes(ext)) return <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-status-amber/10 text-status-amber"><PptIcon /></span>
-  return <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-status-red/10 text-status-red"><PdfIcon /></span>
+  if (['doc', 'docx'].includes(ext)) return <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-info-bg text-navy-800"><WordIcon /></span>
+  if (['xls', 'xlsx'].includes(ext)) return <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-success-text/10 text-success-text"><ExcelIcon /></span>
+  if (['ppt', 'pptx'].includes(ext)) return <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-warning-text/10 text-warning-text"><PptIcon /></span>
+  return <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-danger-text/10 text-danger-text"><PdfIcon /></span>
 }
 
 function OpenIcon() {

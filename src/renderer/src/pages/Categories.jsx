@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Modal } from '../components/Modal.jsx'
+import Swoosh from '../components/Swoosh.jsx'
 import Toast from '../components/Toast.jsx'
 
 export default function Categories({ currentUser }) {
@@ -97,33 +98,62 @@ export default function Categories({ currentUser }) {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-8 py-8">
+    <div className="mx-auto w-full">
       {toast && <Toast message={toast.message} tone={toast.tone} onClose={() => setToast(null)} />}
 
-      {/* Toolbar */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="relative">
-          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/35">
-            <SearchIcon />
-          </span>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search categories or subcategories…"
-            className="w-80 rounded-xl border border-hairline bg-white py-2.5 pl-10 pr-3.5 text-sm outline-none transition-all placeholder:text-ink/30 focus:border-orange focus:ring-2 focus:ring-orange/20"
-          />
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-xs text-ink/40">
-            {categories.length} categor{categories.length === 1 ? 'y' : 'ies'} · {subTotal} subcategor{subTotal === 1 ? 'y' : 'ies'}
-          </span>
-          <button
-            onClick={() => setEditing({ name: '', sort_order: categories.length + 1 })}
-            className="flex items-center gap-2 rounded-xl bg-orange px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-orange/25 transition-all hover:bg-orange/90 hover:shadow-lg hover:shadow-orange/30 active:scale-[.98]"
-          >
-            <PlusIcon />
-            Add Category
-          </button>
+      {/* Colorful page header */}
+      <div className="relative mb-4 overflow-hidden rounded-2xl bg-gradient-to-r from-navy-900 via-navy-800 to-navy-700 shadow-lg shadow-navy-900/20 lg:mb-5">
+        <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-accent/25 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 right-48 h-56 w-56 rounded-full bg-white/[0.06] blur-2xl" />
+        <Swoosh className="pointer-events-none absolute -bottom-10 right-4 h-36 w-36 opacity-30" />
+        <div className="relative z-10 p-4 lg:p-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] bg-white/10 text-white">
+              <FolderIcon />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-[18px] font-bold leading-tight text-white lg:text-[22px]">
+                File Categories
+              </h1>
+              <p className="mt-0.5 text-[11px] text-white/60 lg:text-[12px]">
+                Filing Structure · {categories.length} categor{categories.length === 1 ? 'y' : 'ies'} · {subTotal} subcategor{subTotal === 1 ? 'y' : 'ies'}
+              </p>
+            </div>
+            <div className="flex shrink-0 gap-2">
+              <span className="rounded-xl bg-white/10 px-3 py-1.5 text-center">
+                <span className="block font-mono text-[15px] font-bold leading-none text-white lg:text-[17px]">{categories.length}</span>
+                <span className="mt-0.5 block font-mono text-[9px] uppercase tracking-wider text-white/60">Categories</span>
+              </span>
+              <span className="rounded-xl bg-white/10 px-3 py-1.5 text-center">
+                <span className="block font-mono text-[15px] font-bold leading-none text-white lg:text-[17px]">{subTotal}</span>
+                <span className="mt-0.5 block font-mono text-[9px] uppercase tracking-wider text-white/60">Subcats</span>
+              </span>
+              <span className="rounded-xl bg-white/10 px-3 py-1.5 text-center">
+                <span className="block font-mono text-[15px] font-bold leading-none text-white lg:text-[17px]">{categories.reduce((n, c) => n + (c.file_count || 0), 0)}</span>
+                <span className="mt-0.5 block font-mono text-[9px] uppercase tracking-wider text-white/60">Filed Docs</span>
+              </span>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-52">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary">
+                <SearchIcon />
+              </span>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search categories or subcategories…"
+                className="w-full rounded-xl border border-transparent bg-white py-2.5 pl-10 pr-3.5 text-sm text-text-primary outline-none transition-all placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/40"
+              />
+            </div>
+            <button
+              onClick={() => setEditing({ name: '', sort_order: categories.length + 1 })}
+              className="flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-accent/30 transition-all hover:bg-accent-dark active:scale-[.98]"
+            >
+              <PlusIcon />
+              Add Category
+            </button>
+          </div>
         </div>
       </div>
 
@@ -135,15 +165,15 @@ export default function Categories({ currentUser }) {
           return (
             <div
               key={cat.id}
-              className="overflow-hidden rounded-2xl border border-hairline bg-white shadow-sm transition-shadow hover:shadow-md hover:shadow-navy/5"
+              className="gov-card overflow-hidden transition-shadow hover:shadow-md hover:shadow-navy-900/5"
             >
               {/* Header */}
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline bg-paper px-5 py-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-row-hover/70 px-5 py-3.5">
                 <div className="flex min-w-0 items-center gap-3.5">
                   <button
                     onClick={() => setCollapsed((c) => ({ ...c, [cat.id]: !c[cat.id] }))}
                     title={isOpen ? 'Collapse' : 'Expand'}
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy text-paper transition-all hover:bg-navy-deep ${
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-800 text-white transition-all hover:bg-navy-700 ${
                       isOpen ? '' : 'opacity-70'
                     }`}
                   >
@@ -151,12 +181,12 @@ export default function Categories({ currentUser }) {
                   </button>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <h2 className="truncate font-heading text-base font-semibold text-navy">{cat.name}</h2>
-                      <span className="shrink-0 rounded-md bg-paper-dark px-1.5 py-0.5 font-mono text-[10px] text-ink/45">
+                      <h2 className="truncate font-heading text-base font-semibold text-navy-800">{cat.name}</h2>
+                      <span className="shrink-0 rounded-md bg-row-hover px-1.5 py-0.5 font-mono text-[10px] text-text-secondary">
                         #{cat.sort_order}
                       </span>
                     </div>
-                    <div className="mt-0.5 flex items-center gap-2 font-mono text-[11px] text-ink/40">
+                    <div className="mt-0.5 flex items-center gap-2 font-mono text-[11px] text-text-secondary">
                       <span>{count} subcategor{count === 1 ? 'y' : 'ies'}</span>
                     </div>
                   </div>
@@ -164,14 +194,14 @@ export default function Categories({ currentUser }) {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setNewSub({ category_id: cat.id, name: '', sort_order: 0 })}
-                    className="flex items-center gap-1.5 rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-navy transition-colors hover:border-orange hover:bg-orange-soft hover:text-orange"
+                    className="flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-semibold text-navy-800 transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent"
                   >
                     <PlusIcon />
                     Subcategory
                   </button>
                   <button
                     onClick={() => setEditing({ id: cat.id, name: cat.name, sort_order: cat.sort_order })}
-                    className="rounded-lg border border-hairline bg-white p-2 text-ink/50 transition-colors hover:border-orange hover:bg-orange-soft hover:text-orange"
+                    className="rounded-lg border border-border bg-white p-2 text-text-secondary transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent"
                     title="Edit category"
                   >
                     <EditIcon />
@@ -179,7 +209,7 @@ export default function Categories({ currentUser }) {
                   {isAdmin && (
                     <button
                       onClick={() => tryDelete({ type: 'category', id: cat.id, name: cat.name, file_count: cat.file_count })}
-                      className="rounded-lg border border-hairline bg-white p-2 text-ink/50 transition-colors hover:border-status-red hover:bg-status-red/5 hover:text-status-red"
+                      className="rounded-lg border border-border bg-white p-2 text-text-secondary transition-colors hover:border-danger-text hover:bg-danger-bg/50 hover:text-danger-text"
                       title="Delete category"
                     >
                       <TrashIcon />
@@ -190,21 +220,21 @@ export default function Categories({ currentUser }) {
 
               {/* Subcategory list */}
               {isOpen && (
-                <ul className="divide-y divide-hairline">
+                <ul className="divide-y divide-border">
                   {cat.subcategories.map((sub, i) => (
-                    <li key={sub.id} className="group flex items-center justify-between px-5 py-2.5 transition-colors hover:bg-paper/60">
+                    <li key={sub.id} className="group flex items-center justify-between px-5 py-2.5 transition-colors hover:bg-row-hover">
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className="w-6 shrink-0 font-mono text-[11px] text-ink/30">
+                        <span className="w-6 shrink-0 font-mono text-[11px] text-text-secondary">
                           {String(i + 1).padStart(2, '0')}
                         </span>
-                        <span className="truncate text-sm text-ink/80">{sub.name}</span>
+                        <span className="truncate text-sm text-text-primary">{sub.name}</span>
                       </div>
                       <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                         <button
                           onClick={() =>
                             setEditing({ id: sub.id, isSub: true, category_id: cat.id, name: sub.name, sort_order: sub.sort_order })
                           }
-                          className="rounded-lg p-1.5 text-ink/50 transition-colors hover:bg-orange-soft hover:text-orange"
+                          className="rounded-lg p-1.5 text-text-secondary transition-colors hover:bg-accent-soft hover:text-accent"
                           title="Edit subcategory"
                         >
                           <EditIcon />
@@ -212,7 +242,7 @@ export default function Categories({ currentUser }) {
                         {isAdmin && (
                           <button
                             onClick={() => tryDelete({ type: 'sub', id: sub.id, name: sub.name, file_count: sub.file_count })}
-                            className="rounded-lg p-1.5 text-ink/50 transition-colors hover:bg-status-red/5 hover:text-status-red"
+                            className="rounded-lg p-1.5 text-text-secondary transition-colors hover:bg-danger-bg/50 hover:text-danger-text"
                             title="Delete subcategory"
                           >
                             <TrashIcon />
@@ -222,7 +252,7 @@ export default function Categories({ currentUser }) {
                     </li>
                   ))}
                   {cat.subcategories.length === 0 && (
-                    <li className="px-5 py-4 text-sm text-ink/40">No subcategories yet.</li>
+                    <li className="px-5 py-4 text-sm text-text-secondary">No subcategories yet.</li>
                   )}
                 </ul>
               )}
@@ -231,7 +261,7 @@ export default function Categories({ currentUser }) {
         })}
 
         {filtered.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-hairline bg-white px-5 py-14 text-center text-sm text-ink/40">
+          <div className="rounded-2xl border border-dashed border-border bg-white px-5 py-14 text-center text-sm text-text-secondary">
             {categories.length === 0
               ? 'No categories yet. Add your first filing category.'
               : 'No categories match your search.'}
@@ -267,17 +297,17 @@ export default function Categories({ currentUser }) {
                 onChange={(e) => setEditing({ ...editing, sort_order: e.target.value })}
               />
             </Field>
-            <div className="flex items-center justify-end gap-2 border-t border-hairline pt-4">
+            <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
               <button
                 type="button"
                 onClick={() => setEditing(null)}
-                className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 transition-colors hover:bg-paper-dark"
+                className="rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-row-hover"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-1.5 rounded-lg bg-orange px-4 py-2 text-xs font-semibold text-white shadow-md shadow-orange/25 transition-all hover:bg-orange/90 active:scale-[.98]"
+                className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white shadow-md shadow-accent/25 transition-all hover:bg-accent-dark active:scale-[.98]"
               >
                 <SaveIcon />
                 Save
@@ -308,17 +338,17 @@ export default function Categories({ currentUser }) {
                 onChange={(e) => setNewSub({ ...newSub, sort_order: e.target.value })}
               />
             </Field>
-            <div className="flex items-center justify-end gap-2 border-t border-hairline pt-4">
+            <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
               <button
                 type="button"
                 onClick={() => setNewSub(null)}
-                className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 transition-colors hover:bg-paper-dark"
+                className="rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-row-hover"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-1.5 rounded-lg bg-orange px-4 py-2 text-xs font-semibold text-white shadow-md shadow-orange/25 transition-all hover:bg-orange/90 active:scale-[.98]"
+                className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white shadow-md shadow-accent/25 transition-all hover:bg-accent-dark active:scale-[.98]"
               >
                 <SaveIcon />
                 Save
@@ -330,20 +360,20 @@ export default function Categories({ currentUser }) {
 
       {confirmDel && (
         <Modal title={`Delete ${confirmDel.type}`} onClose={() => setConfirmDel(null)} compact>
-          <p className="text-sm text-ink/70">
+          <p className="text-sm text-text-secondary">
             Delete <b>{confirmDel.name}</b>?{' '}
             {confirmDel.type === 'category' && 'All its subcategories are also removed.'}
           </p>
           <div className="mt-5 flex items-center justify-end gap-2">
             <button
               onClick={() => setConfirmDel(null)}
-              className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 hover:bg-paper-dark"
+              className="rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-text-secondary hover:bg-row-hover"
             >
               Cancel
             </button>
             <button
               onClick={remove}
-              className="rounded-lg bg-status-red px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
+              className="rounded-lg bg-danger-text px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
             >
               Delete
             </button>
@@ -355,16 +385,16 @@ export default function Categories({ currentUser }) {
 }
 
 const inputCls =
-  'w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-orange focus:ring-1 focus:ring-orange'
+  'w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-accent focus:ring-1 focus:ring-accent'
 
 function Field({ label, required, hint, children }) {
   return (
     <div>
-      <label className="mb-1.5 flex items-center justify-between text-[11px] font-medium uppercase tracking-wide text-ink/60">
+      <label className="mb-1.5 flex items-center justify-between text-[11px] font-medium uppercase tracking-wide text-text-secondary">
         <span>
-          {label} {required && <span className="text-orange">*</span>}
+          {label} {required && <span className="text-accent">*</span>}
         </span>
-        {hint && <span className="font-normal normal-case tracking-normal text-ink/35">{hint}</span>}
+        {hint && <span className="font-normal normal-case tracking-normal text-text-secondary">{hint}</span>}
       </label>
       {children}
     </div>
@@ -403,6 +433,14 @@ function PlusIcon() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <line x1="12" y1="5" x2="12" y2="19" />
       <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  )
+}
+
+function FolderIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
     </svg>
   )
 }
