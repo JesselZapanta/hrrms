@@ -29,39 +29,89 @@ jobs:
       - name: Bump version
         id: bump
         shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           node <<'NODE'
-          const fs=require('fs');
-          const p=require('./package.json');
-          const [maj,min]=p.version.split('.').map(Number);
-          const v=`${maj}.${min+1}.0`;
-          p.version=v;
-          fs.writeFileSync('./package.json', JSON.stringify(p,null,2)+'\n');
+          const fs = require('fs');
+          const { execSync } = require('child_process');
+          const repo = process.env.GITHUB_REPOSITORY;
+          const pkg = require('./package.json');
+          const parse = (s) => {
+            const m = /^v?(\d+)\.(\d+)\.(\d+)$/.exec((s || '').trim());
+            return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
+          };
+          let latest = null;
+          try {
+            const out = execSync(
+              `gh api "repos/${repo}/releases?per_page=100" --paginate --jq "[.[].tag_name]"`,
+              { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
+            );
+            for (const t of JSON.parse(out)) {
+              const v = parse(t);
+              if (v && (!latest || v[0] > latest[0] || (v[0] === latest[0] && (v[1] > latest[1] || (v[1] === latest[1] && v[2] > latest[2]))))) latest = v;
+            }
+          } catch (e) {
+            console.log('could not list releases, falling back to package.json');
+          }
+          const base = parse(pkg.version) || [0, 0, 0];
+          const start = latest && (latest[0] > base[0] || (latest[0] === base[0] && (latest[1] > base[1] || (latest[1] === base[1] && latest[2] >= base[2])))) ? latest : base;
+          const v = `${start[0]}.${start[1] + 1}.0`;
+          pkg.version = v;
+          fs.writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\n');
           fs.appendFileSync(process.env.GITHUB_OUTPUT, `version=${v}\n`);
-          console.log(`bumped to ${v}`);
+          console.log(`package=${base.join('.')} latest=${latest ? latest.join('.') : 'none'} -> bumped to ${v}`);
           NODE
 
       - name: Create tag
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -f v${{ steps.bump.outputs.version }}
           git push -f origin v${{ steps.bump.outputs.version }}
 
-      - name: Delete existing release if any
+      - name: Delete existing releases with this tag (all duplicates, by ID)
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release delete v${{ steps.bump.outputs.version }} --yes || true
+        run: |
+          TAG="v${{ steps.bump.outputs.version }}"
+          IDS=$(gh api "repos/${{ github.repository }}/releases?per_page=100" --paginate --jq ".[] | select(.tag_name==\"$TAG\") | .id")
+          if [ -z "$IDS" ]; then
+            echo "no existing release for $TAG"
+          else
+            for ID in $IDS; do
+              echo "deleting release id $ID ($TAG)"
+              gh api -X DELETE "repos/${{ github.repository }}/releases/$ID"
+            done
+          fi
+          # tag itself is kept (pushed above) — electron-builder needs it to exist
 
       - name: Build and publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run release
 
+      - name: Verify release assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v${{ steps.bump.outputs.version }}"
+          echo "checking $TAG"
+          ASSETS=$(gh release view "$TAG" --json assets --jq ".assets[].name")
+          echo "$ASSETS"
+          echo "$ASSETS" | grep -q "HRRMS-Setup-${{ steps.bump.outputs.version }}.exe" || { echo "MISSING exe"; exit 1; }
+          echo "$ASSETS" | grep -q "blockmap" || { echo "MISSING blockmap"; exit 1; }
+          echo "$ASSETS" | grep -q "latest.yml" || { echo "MISSING latest.yml (split/duplicate release?)"; exit 1; }
+          echo "release $TAG is complete"
+
       - name: Commit version bump
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add package.json
-          git commit -m "chore: bump version to ${{ steps.bump.outputs.version }}" || true
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.version }} [skip ci]" || true
           git push
