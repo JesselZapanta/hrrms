@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Modal } from '../components/Modal.jsx'
 import Select from '../components/Select.jsx'
+import Swoosh from '../components/Swoosh.jsx'
 import Toast from '../components/Toast.jsx'
 
 const PAGE_SIZE = 8 // grades per page (each grade expands to 8 steps)
@@ -143,39 +144,69 @@ export default function SalaryGrades() {
   const getStepRow = (group, stepNum) => group.steps.find((r) => r.step === stepNum) || null
 
   return (
-    <div className="mx-auto max-w-[1280px] px-6 py-6">
+    <div className="mx-auto w-full">
       {toast && <Toast message={toast.message} tone={toast.tone} onClose={() => setToast(null)} />}
 
-      {/* Toolbar */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative">
-            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/35"><SearchIcon /></span>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search SG, step or salary…"
-              className="w-72 rounded-xl border border-hairline bg-white py-2.5 pl-10 pr-3.5 text-sm outline-none transition-all placeholder:text-ink/30 focus:border-orange focus:ring-2 focus:ring-orange/20"
-            />
+      {/* Colorful page header */}
+      <div className="relative mb-4 overflow-hidden rounded-2xl bg-gradient-to-r from-navy-900 via-navy-800 to-navy-700 shadow-lg shadow-navy-900/20 lg:mb-5">
+        <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-accent/25 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 right-48 h-56 w-56 rounded-full bg-white/[0.06] blur-2xl" />
+        <Swoosh className="pointer-events-none absolute -bottom-10 right-4 h-36 w-36 opacity-30" />
+        <div className="relative z-10 p-4 lg:p-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] bg-white/10 text-white">
+              <CoinsIcon />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-[18px] font-bold leading-tight text-white lg:text-[22px]">
+                Salary Grades
+              </h1>
+              <p className="mt-0.5 text-[11px] text-white/60 lg:text-[12px]">
+                Salary Standardization · {grouped.length} grades · {grouped.reduce((n, g) => n + ((g.steps || []).length), 0)} steps
+              </p>
+            </div>
+            <div className="flex shrink-0 gap-2">
+              <span className="rounded-xl bg-white/10 px-3 py-1.5 text-center">
+                <span className="block font-mono text-[15px] font-bold leading-none text-white lg:text-[17px]">{grouped.length}</span>
+                <span className="mt-0.5 block font-mono text-[9px] uppercase tracking-wider text-white/60">Grades</span>
+              </span>
+              <span className="rounded-xl bg-white/10 px-3 py-1.5 text-center">
+                <span className="block font-mono text-[15px] font-bold leading-none text-white lg:text-[17px]">{grouped.reduce((n, g) => n + ((g.steps || []).length), 0)}</span>
+                <span className="mt-0.5 block font-mono text-[9px] uppercase tracking-wider text-white/60">Steps</span>
+              </span>
+              <span className="rounded-xl bg-white/10 px-3 py-1.5 text-center">
+                <span className="block font-mono text-[15px] font-bold leading-none text-white lg:text-[17px]">{grouped.filter((g) => g.expectedSteps != null && (g.count ?? (g.steps || []).length) >= g.expectedSteps).length}</span>
+                <span className="mt-0.5 block font-mono text-[9px] uppercase tracking-wider text-white/60">Complete</span>
+              </span>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={openAddGrade}
-            className="flex items-center gap-2 rounded-xl bg-orange px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-orange/25 transition-all hover:bg-orange/90 hover:shadow-lg hover:shadow-orange/30 active:scale-[.98]"
-          >
-            <PlusIcon /> Add Salary Grade
-          </button>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-52">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary"><SearchIcon /></span>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search SG, step or salary…"
+                className="w-full rounded-xl border border-transparent bg-white py-2.5 pl-10 pr-3.5 text-sm text-text-primary outline-none transition-all placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/40"
+              />
+            </div>
+            <button
+              onClick={openAddGrade}
+              className="flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-accent/30 transition-all hover:bg-accent-dark active:scale-[.98]"
+            >
+              <PlusIcon /> Add Salary Grade
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Matrix table */}
-      <div className="overflow-hidden rounded-2xl border border-hairline bg-white shadow-sm">
+      <div className="gov-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-hairline bg-navy/[0.04] font-mono text-[10px] uppercase tracking-[1.5px] text-ink/45">
-                <th className="sticky left-0 z-10 cursor-pointer select-none bg-navy/[0.04] px-4 py-3 text-left hover:text-ink" onClick={() => setSortDir((d) => d === 'asc' ? 'desc' : 'asc')}>
+              <tr className="border-b border-border bg-[#F1F4F9] text-[13px] font-semibold text-text-primary">
+                <th className="sticky left-0 z-10 cursor-pointer select-none bg-[#F1F4F9] px-4 py-3 text-left" onClick={() => setSortDir((d) => d === 'asc' ? 'desc' : 'asc')}>
                   <span className="inline-flex items-center gap-1">Grade <SortArrow dir={sortDir} /></span>
                 </th>
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
@@ -184,25 +215,25 @@ export default function SalaryGrades() {
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-hairline">
+            <tbody className="divide-y divide-border">
               {pageRows.map((g) => (
                 <>
-                  <tr key={g.grade} className="group whitespace-nowrap hover:bg-paper/70">
-                    <td className="sticky left-0 z-10 bg-white px-4 py-3 group-hover:bg-paper/70">
-                      <span className="inline-flex items-center rounded-lg bg-navy/5 px-2.5 py-1 font-heading text-sm font-bold text-navy">{g.grade}</span>
+                  <tr key={g.grade} className="group whitespace-nowrap hover:bg-row-hover">
+                    <td className="sticky left-0 z-10 bg-white px-4 py-3 group-hover:bg-row-hover">
+                      <span className="inline-flex items-center rounded-lg bg-info-bg px-2.5 py-1 font-heading text-sm font-bold text-navy-800">{g.grade}</span>
                     </td>
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((stepNum) => {
                       const row = getStepRow(g, stepNum)
                       const disabled = g.gradeNum === 33 && stepNum > 2
-                      if (disabled) return <td key={stepNum} className="px-3 py-3 text-right font-mono text-xs text-ink/20">—</td>
+                      if (disabled) return <td key={stepNum} className="px-3 py-3 text-right font-mono text-xs text-text-secondary">—</td>
                       if (!row) {
-                        return <td key={stepNum} className="px-3 py-3 text-right font-mono text-xs text-ink/20">—</td>
+                        return <td key={stepNum} className="px-3 py-3 text-right font-mono text-xs text-text-secondary">—</td>
                       }
                       return (
                         <td key={stepNum} className="px-3 py-3 text-right">
                           <button
                             onClick={() => openEditStep(row)}
-                            className="rounded-lg px-2 py-1 font-mono text-xs font-medium text-ink/80 hover:bg-navy/5 hover:text-navy"
+                            className="rounded-lg px-2 py-1 font-mono text-xs font-medium text-text-primary hover:bg-info-bg hover:text-navy-800"
                             title={`${g.grade} Step ${stepNum} — ${money(row.salary)} (click to edit)`}
                           >
                             {moneyCompact(row.salary)}
@@ -212,8 +243,8 @@ export default function SalaryGrades() {
                     })}
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => openEditGrade(g)} title="Update grade" className="rounded-lg p-2 text-ink/50 hover:bg-orange-soft hover:text-orange"><EditIcon /></button>
-                        <button onClick={() => setConfirmDelGrade(g.grade)} title="Delete grade" className="rounded-lg p-2 text-ink/40 hover:bg-status-red/10 hover:text-status-red"><TrashIcon /></button>
+                        <button onClick={() => openEditGrade(g)} title="Update grade" className="rounded-lg p-2 text-text-secondary hover:bg-accent-soft hover:text-accent"><EditIcon /></button>
+                        <button onClick={() => setConfirmDelGrade(g.grade)} title="Delete grade" className="rounded-lg p-2 text-text-secondary hover:bg-danger-text/10 hover:text-danger-text"><TrashIcon /></button>
                       </div>
                     </td>
                   </tr>
@@ -221,7 +252,7 @@ export default function SalaryGrades() {
               ))}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-5 py-14 text-center text-sm text-ink/40">
+                  <td colSpan={10} className="px-5 py-14 text-center text-sm text-text-secondary">
                     {grouped.length === 0 ? 'No salary grades yet. Click “Add Salary Grade” to seed SG-1 to SG-33.' : 'No grades match your search.'}
                   </td>
                 </tr>
@@ -233,16 +264,16 @@ export default function SalaryGrades() {
 
       {/* Pagination */}
       <div className="mt-4 flex items-center justify-between">
-        <span className="font-mono text-xs text-ink/40">
+        <span className="font-mono text-xs text-text-secondary">
           {sorted.length === 0 ? 'No results' : `Showing ${from}–${to} of ${sorted.length} grades`}{sorted.length ? ` · ${totalSteps} steps total` : ''}
         </span>
         {totalPages > 1 && (
           <div className="flex items-center gap-1.5">
-            <button onClick={() => setPage(safePage - 1)} disabled={safePage === 1} className="flex h-8 w-8 items-center justify-center rounded-lg border border-hairline bg-white text-ink/60 hover:bg-paper-dark disabled:opacity-40"><ChevronIcon dir="left" /></button>
+            <button onClick={() => setPage(safePage - 1)} disabled={safePage === 1} className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-white text-text-secondary hover:bg-row-hover disabled:opacity-40"><ChevronIcon dir="left" /></button>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-              <button key={n} onClick={() => setPage(n)} className={`h-8 min-w-8 rounded-lg px-2 font-mono text-xs ${n === safePage ? 'bg-orange font-semibold text-white shadow-md shadow-orange/25' : 'border border-hairline bg-white text-ink/60 hover:bg-paper-dark'}`}>{n}</button>
+              <button key={n} onClick={() => setPage(n)} className={`h-8 min-w-8 rounded-lg px-2 font-mono text-xs ${n === safePage ? 'bg-navy-900 font-semibold text-white shadow-md shadow-navy-900/25' : 'border border-border bg-white text-text-secondary hover:bg-row-hover'}`}>{n}</button>
             ))}
-            <button onClick={() => setPage(safePage + 1)} disabled={safePage === totalPages} className="flex h-8 w-8 items-center justify-center rounded-lg border border-hairline bg-white text-ink/60 hover:bg-paper-dark disabled:opacity-40"><ChevronIcon dir="right" /></button>
+            <button onClick={() => setPage(safePage + 1)} disabled={safePage === totalPages} className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-white text-text-secondary hover:bg-row-hover disabled:opacity-40"><ChevronIcon dir="right" /></button>
           </div>
         )}
       </div>
@@ -252,7 +283,7 @@ export default function SalaryGrades() {
         <Modal title={editing.id ? `Edit ${editing.grade} — Step ${editing.step}` : 'Add Salary Grade Step'} onClose={() => setEditing(null)} compact>
           <form onSubmit={saveStep} className="space-y-4">
             { !editing.id && grouped.length === 33 && grouped.every(g => g.count === g.expectedSteps) && (
-              <div className="rounded-lg border border-navy/10 bg-navy/[0.04] px-3 py-2 font-mono text-[11px] text-ink/50">
+              <div className="rounded-lg border border-navy/10 bg-[#F1F4F9] px-3 py-2 font-mono text-[11px] text-text-secondary">
                 All 33 grades already have complete steps (258 total). “Add” will update the salary for the selected grade/step.
               </div>
             )}
@@ -302,7 +333,7 @@ export default function SalaryGrades() {
               const grp = grouped.find(g => g.grade === editing.grade)
               const row = grp?.steps.find(r => String(r.step) === String(editing.step))
               return row ? (
-                <div className="rounded-lg border border-orange/20 bg-orange-soft px-3 py-2 font-mono text-[11px] text-orange">
+                <div className="rounded-lg border border-accent/20 bg-accent-soft px-3 py-2 font-mono text-[11px] text-accent">
                   {editing.grade} Step {editing.step} already exists ({money(row.salary)}). Saving will <b>update</b> it.
                 </div>
               ) : null
@@ -310,14 +341,14 @@ export default function SalaryGrades() {
             <Field label="Monthly Salary (₱)" required>
               <input type="number" step="0.01" min="0" className={inputCls} value={editing.salary} onChange={(e) => setEditing({ ...editing, salary: e.target.value })} placeholder="e.g. 31705" required />
             </Field>
-            {error && <div className="rounded-lg border border-status-red/30 bg-status-red/5 px-3 py-2 text-xs text-status-red">{error}</div>}
-            <div className="flex items-center justify-between border-t border-hairline pt-4">
+            {error && <div className="rounded-lg border border-danger-text/30 bg-danger-bg/50 px-3 py-2 text-xs text-danger-text">{error}</div>}
+            <div className="flex items-center justify-between border-t border-border pt-4">
               {editing.id ? (
-                <button type="button" onClick={() => { const r = grouped.flatMap(g=>g.steps).find(s=>s.id===editing.id); if(r) { setConfirmDelStep(r); setEditing(null) } }} className="rounded-lg border border-status-red/20 bg-status-red/5 px-3.5 py-2 text-xs font-medium text-status-red hover:bg-status-red/10">Delete Step</button>
+                <button type="button" onClick={() => { const r = grouped.flatMap(g=>g.steps).find(s=>s.id===editing.id); if(r) { setConfirmDelStep(r); setEditing(null) } }} className="rounded-lg border border-danger-text/20 bg-danger-bg/50 px-3.5 py-2 text-xs font-medium text-danger-text hover:bg-danger-text/10">Delete Step</button>
               ) : <span />}
               <div className="flex gap-2">
-                <button type="button" onClick={() => setEditing(null)} className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 hover:bg-paper-dark">Cancel</button>
-                <button type="submit" className="flex items-center gap-1.5 rounded-lg bg-orange px-4 py-2 text-xs font-semibold text-white shadow-md shadow-orange/25 hover:bg-orange/90"><SaveIcon /> Save Step</button>
+                <button type="button" onClick={() => setEditing(null)} className="rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-text-secondary hover:bg-row-hover">Cancel</button>
+                <button type="submit" className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white shadow-md shadow-accent/25 hover:bg-accent-dark"><SaveIcon /> Save Step</button>
               </div>
             </div>
           </form>
@@ -328,15 +359,15 @@ export default function SalaryGrades() {
       {confirmDelStep && (
         <Modal title="Delete step" onClose={() => setConfirmDelStep(null)} compact>
           <div className="flex items-center gap-4">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-status-red/10 text-status-red"><TrashIcon /></span>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-danger-text/10 text-danger-text"><TrashIcon /></span>
             <div>
-              <div className="text-sm font-semibold text-ink">Delete {confirmDelStep.grade} Step {confirmDelStep.step}?</div>
-              <p className="mt-0.5 text-xs text-ink/50"><b>{money(confirmDelStep.salary)}</b> will be removed from this grade.</p>
+              <div className="text-sm font-semibold text-text-primary">Delete {confirmDelStep.grade} Step {confirmDelStep.step}?</div>
+              <p className="mt-0.5 text-xs text-text-secondary"><b>{money(confirmDelStep.salary)}</b> will be removed from this grade.</p>
             </div>
           </div>
-          <div className="mt-5 flex items-center justify-end gap-2 border-t border-hairline pt-4">
-            <button onClick={() => setConfirmDelStep(null)} className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 hover:bg-paper-dark">Cancel</button>
-            <button onClick={removeStep} className="rounded-lg bg-status-red px-4 py-2 text-xs font-semibold text-white hover:opacity-90">Delete</button>
+          <div className="mt-5 flex items-center justify-end gap-2 border-t border-border pt-4">
+            <button onClick={() => setConfirmDelStep(null)} className="rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-text-secondary hover:bg-row-hover">Cancel</button>
+            <button onClick={removeStep} className="rounded-lg bg-danger-text px-4 py-2 text-xs font-semibold text-white hover:opacity-90">Delete</button>
           </div>
         </Modal>
       )}
@@ -344,15 +375,15 @@ export default function SalaryGrades() {
       {confirmDelGrade && (
         <Modal title="Delete salary grade" onClose={() => setConfirmDelGrade(null)} compact>
           <div className="flex items-center gap-4">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-status-red/10 text-status-red"><TrashIcon /></span>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-danger-text/10 text-danger-text"><TrashIcon /></span>
             <div>
-              <div className="text-sm font-semibold text-ink">Delete {confirmDelGrade}?</div>
-              <p className="mt-0.5 text-xs text-ink/50">All steps under this grade will be removed. This cannot be undone.</p>
+              <div className="text-sm font-semibold text-text-primary">Delete {confirmDelGrade}?</div>
+              <p className="mt-0.5 text-xs text-text-secondary">All steps under this grade will be removed. This cannot be undone.</p>
             </div>
           </div>
-          <div className="mt-5 flex items-center justify-end gap-2 border-t border-hairline pt-4">
-            <button onClick={() => setConfirmDelGrade(null)} className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 hover:bg-paper-dark">Cancel</button>
-            <button onClick={removeGrade} className="rounded-lg bg-status-red px-4 py-2 text-xs font-semibold text-white hover:opacity-90">Delete</button>
+          <div className="mt-5 flex items-center justify-end gap-2 border-t border-border pt-4">
+            <button onClick={() => setConfirmDelGrade(null)} className="rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-text-secondary hover:bg-row-hover">Cancel</button>
+            <button onClick={removeGrade} className="rounded-lg bg-danger-text px-4 py-2 text-xs font-semibold text-white hover:opacity-90">Delete</button>
           </div>
         </Modal>
       )}
@@ -388,14 +419,14 @@ export default function SalaryGrades() {
                 })}
               </div>
             ) : (
-              <div className="rounded-xl border border-dashed border-hairline bg-paper/50 px-4 py-6 text-center font-mono text-xs text-ink/40">Type a grade above (e.g., SG-11) to enter its step salaries.</div>
+              <div className="rounded-xl border border-dashed border-border bg-row-hover/50 px-4 py-6 text-center font-mono text-xs text-text-secondary">Type a grade above (e.g., SG-11) to enter its step salaries.</div>
             )}
-            {bulkError && <div className="rounded-lg border border-status-red/30 bg-status-red/5 px-3 py-2 text-xs text-status-red">{bulkError}</div>}
-            <div className="flex items-center justify-between border-t border-hairline pt-4">
-              <div className="font-mono text-xs text-ink/40">{bulk.grade ? `${Number(String(bulk.grade).split('-')[1])===33?2:8} steps` : ''}</div>
+            {bulkError && <div className="rounded-lg border border-danger-text/30 bg-danger-bg/50 px-3 py-2 text-xs text-danger-text">{bulkError}</div>}
+            <div className="flex items-center justify-between border-t border-border pt-4">
+              <div className="font-mono text-xs text-text-secondary">{bulk.grade ? `${Number(String(bulk.grade).split('-')[1])===33?2:8} steps` : ''}</div>
               <div className="flex gap-2">
-                <button type="button" onClick={() => setBulk(null)} className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 hover:bg-paper-dark">Cancel</button>
-                <button type="submit" className="flex items-center gap-1.5 rounded-lg bg-orange px-4 py-2 text-xs font-semibold text-white shadow-md shadow-orange/25 hover:bg-orange/90"><SaveIcon /> Save Grade</button>
+                <button type="button" onClick={() => setBulk(null)} className="rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-text-secondary hover:bg-row-hover">Cancel</button>
+                <button type="submit" className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white shadow-md shadow-accent/25 hover:bg-accent-dark"><SaveIcon /> Save Grade</button>
               </div>
             </div>
           </form>
@@ -405,12 +436,12 @@ export default function SalaryGrades() {
   )
 }
 
-const inputCls = 'w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-orange focus:ring-1 focus:ring-orange'
+const inputCls = 'w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-accent focus:ring-1 focus:ring-accent'
 
 function Field({ label, required, children }) {
   return (
     <div>
-      <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-ink/60">{label} {required && <span className="text-orange">*</span>}</label>
+      <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-text-secondary">{label} {required && <span className="text-accent">*</span>}</label>
       {children}
     </div>
   )
@@ -418,6 +449,9 @@ function Field({ label, required, children }) {
 
 function SearchIcon() {
   return (<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>)
+}
+function CoinsIcon() {
+  return (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v10" /><path d="M15 9.5c0-.83-1.34-1.5-3-1.5s-3 .67-3 1.5 1.34 1.5 3 1.5 3 .67 3 1.5-1.34 1.5-3 1.5-3-.67-3-1.5" /></svg>)
 }
 function ChevronIcon({ dir = 'right' }) {
   return (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={dir === 'down' ? 'rotate-90' : dir === 'left' ? 'rotate-180' : dir === 'right' ? '' : 'rotate-180'}><polyline points="9 18 15 12 9 6" /></svg>)

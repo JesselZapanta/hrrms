@@ -1,14 +1,14 @@
 const STATUS_COLORS = {
-  permanent: 'bg-status-green',
-  job_order: 'bg-status-amber',
-  contract_of_service: 'bg-navy',
-  active: 'bg-status-green',
-  probationary: 'bg-status-amber',
-  terminated: 'bg-status-red',
-  inactive: 'bg-status-red'
+  permanent: 'bg-success-bar',
+  job_order: 'bg-warning-bar',
+  contract_of_service: 'bg-tile-blue',
+  active: 'bg-success-bar',
+  probationary: 'bg-warning-bar',
+  terminated: 'bg-danger-text',
+  inactive: 'bg-danger-text'
 }
 
 export function StatusDot({ status }) {
-  const color = STATUS_COLORS[String(status).toLowerCase()] || 'bg-status-amber'
+  const color = STATUS_COLORS[String(status).toLowerCase()] || 'bg-warning-bar'
   return <span className={`inline-block h-2 w-2 rounded-full ${color}`} />
 }

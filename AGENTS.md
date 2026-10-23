@@ -1,57 +1,68 @@
 # AGENTS.md
 
 ## Stack
-- Electron 43 + electron-vite 5, React 19, Tailwind 4 (`@tailwindcss/vite`), `node:sqlite` (no native deps), `bcryptjs`, `electron-updater` 6.8.
-- Node **22+** required (`actions/setup-node@v4` uses 22). `better-sqlite3` is intentionally not used — `node:sqlite` ships with Electron 43.
+- Electron 43 + electron-vite 5, React 19, Tailwind CSS 4, `node:sqlite`, `bcryptjs`, `electron-updater`.
+- Node **22+**. `better-sqlite3` is intentionally absent: `node:sqlite` ships with Electron 43 and avoids native builds.
 
 ## Commands
 ```bash
 npm install
-npm run dev        # electron-vite dev, hot reload (renderer + main)
-npm run build      # electron-vite build only (out/)
-npm run build:win  # build + electron-builder --win → dist/HRRMS Setup <version>.exe
+npm run dev        # electron-vite dev (main + renderer hot reload)
+npm run build      # electron-vite build -> out/
+npm run start      # preview the built app
+npm run build:win  # build + electron-builder --win -> dist/HRRMS Setup <version>.exe
 npm run release    # build + electron-builder --win --publish always (needs GH_TOKEN)
+node scripts/generate-icon.mjs  # regenerate build/icon.png + build/icon.ico
 ```
-No test/lint/typecheck scripts exist. `npm run build` is the only verification gate — always run it after touching `src/main` or `src/renderer`.
+No test/lint/typecheck scripts exist. `npm run build` is the only verification gate; run it after touching `src/main` or `src/renderer`.
 
-## Entrypoints & Layout
-- `electron.vite.config.mjs` — three targets: `main`/`preload`/`renderer` (aliases `@main`, `@db`, `@renderer`).
-- `src/main/index.js` — app lifecycle, splash (`src/main/splash.js`), `app.setName('hrrms')`, `autoUpdater` setup. `out/main/index.js` at runtime.
-- `src/main/db.js` — `DatabaseSync`, `initDb()` reads `database/schema.sql`+`seed.sql`, runs `migrate()`. `src/main/ipc.js` registers handlers via `wrap()` → `{ok, data}`.
-- `src/preload/index.js` — `contextBridge.exposeInMainWorld('api', …)` — renderer calls `window.api.*.invoke(...)`.
-- `src/renderer/src/App.jsx` — session in `localStorage` (`hrrms.session`), view router (`dashboard`/`employees`/`folder`/`users`/`categories`/`offices`/`salaryGrades`/`profile`). `src/renderer/src/components/Layout.jsx` is the shell.
-- `database/schema.sql` + `seed.sql` — 8 categories, 38 subcategories, 24 offices, SG-1..SG-33. `extraResources` copies `database/` to `process.resourcesPath/database` for packaged builds.
+## Runtime wiring
+- `electron.vite.config.mjs` builds three targets: `main`, `preload`, `renderer`.
+- `src/main/index.js` — app lifecycle, splash (`splash.js`), kill-switch, mandatory update check.
+- `src/main/db.js` — `DatabaseSync`; `initDb()` runs schema, `migrate()`, then count-gated seeds.
+- `src/main/ipc.js` registers handlers; `src/preload/index.js` exposes `window.api`; the renderer never touches the DB or files directly. Services in `src/main/services/*` are synchronous `DatabaseSync` modules.
+- `src/renderer/src/App.jsx` — `localStorage` session (`hrrms.session`) and view switch; `components/Layout.jsx` is the shell (`NAV`/`META`, update banner, version from `app:version` with the `res.data ?? res` unwrap).
 
-## Data Paths (gotcha)
-`app.setName('hrrms')` makes `app.getPath('userData')` → `%APPDATA%\hrrms` on Windows.
-- `getDataDir()` = `join(userData, 'hrrms')` → `%APPDATA%\hrrms\hrrms`
-- DB: `%APPDATA%\hrrms\hrrms\hrrms.db`
-- Storage: `%APPDATA%\hrrms\hrrms\storage\employees/<employeeId>/<subcategoryId>/`
-- Key: `%APPDATA%\hrrms\hrrms.key` (`src/main/crypto.js`, AES-256-GCM, `enc:v1:` prefix for strings, raw `iv|tag|cipher` for files with `.enc` extension). DB file itself is not encrypted.
+## IPC / auth
+- Service handlers in `ipc.js` are wrapped by `wrap(fn)` -> `{ok:true, data}` or `{ok:false, error}`. `app:checkForUpdates` and `app:quitAndInstall` are the raw exceptions.
+- Always unwrap: `const res = await window.api.foo.bar(); if (!res.ok) ...; res.data`.
+- **Do not** `.then(setState)` on a wrapped call — React receives the wrapper object and throws "Objects are not valid as a React child" (caused the v1.1.0 white screen). Use `setState(res.data ?? res)`.
+- IPC does **not** verify the logged-in user or role. `currentUser` is only `localStorage` data; admin/staff checks are renderer-only. Add main-process checks if a change needs real authorization.
+- Add a service: `src/main/services/XService.js` -> handler in `ipc.js` -> expose in `preload/index.js`.
 
-## IPC & Services
-- Every handler in `src/main/ipc.js` is wrapped: `wrap(fn) → {ok, data} | {ok:false, error}`. Renderer must unwrap: `const res = await window.api.foo.bar(); if (!res.ok) …; res.data`.
-- **Do not** do `.then(setState)` on a wrapped call — `setState` will receive the wrapper object and React will throw `Objects are not valid as a React child` (caused the v1.1.0 white-screen). Always `then(res => setState(res.data ?? res))`.
-- Services: `src/main/services/{Auth,User,Employee,Category,Office,SalaryGrade,File}Service.js` — all sync `DatabaseSync`. Renderer never touches DB/files directly.
-- Adding a service: create `Service.js` → handler in `ipc.js` → expose in `preload/index.js` → call via `window.api`.
+## Data & DB
+- `app.setName('hrrms')` makes `userData` `%APPDATA%\hrrms`; `getDataDir()` appends `hrrms` again:
+  - DB: `%APPDATA%\hrrms\hrrms\hrrms.db` (plaintext WAL SQLite)
+  - Files: `%APPDATA%\hrrms\hrrms\storage\employees/<employeeId>/<subcategoryId>/`
+  - Key: `%APPDATA%\hrrms\hrrms.key`
+- Files are AES-256-GCM encrypted (normally `.enc`); profile pictures use the `enc:v1:` string prefix (`src/main/crypto.js`). Decryption is content-based, not extension-based, and `FileService.rename()` currently drops `.enc` from the stored path.
+- The DB stores absolute `file_path` values, so moving the data directory to a different path orphans existing files.
+- Use `getDb()` for all queries; it enables WAL and `PRAGMA foreign_keys=ON` (cascade deletes rely on it). Don't open a second `DatabaseSync`.
+- `schema.sql` uses `CREATE TABLE IF NOT EXISTS`; existing DBs only receive new columns through `migrate()`. Add both a `schema.sql` update and an `ALTER TABLE` migration (e.g. `salary_step` is migration-only).
+- Seeding is count-gated, so a populated DB is not reseeded when you edit `seed.sql` or the seed arrays in `db.js`. `seed.sql` has 8 categories, 38 subcategories, and default users. `db.js` also seeds 25 sample employees, 24 offices, and 258 salary steps (8 per SG; SG-33 has 2).
+- For DBs with fewer than 258 salary steps, `initDb()` fills missing steps and patches legacy Step 1 rates to 2026 values. Preserve that path when changing salary data.
 
-## UI Notes
-- Tailwind 4 `@theme` tokens in `src/renderer/src/styles/main.css`: `navy #1B2C63`, `navy-deep #14214b`, `orange #E85B18`, `paper #FAF8F4`, `hairline #E7E2D6`, status colors; fonts Space Grotesk/Inter/IBM Plex Mono. `.folder-tab` uses `clip-path`.
-- `Select.jsx` uses `createPortal` to `document.body` (flip-up, reposition on scroll) — don't render selects inside modals without it.
-- `Layout.jsx` shows `v{version}` from `app:version` IPC (`app.getVersion()`). Keep the unwrap fix.
-
-## Build / Publish
-- `package.json:build` is the source of truth for `electron-builder` when run via `npm run build:win`/`release` (the `electron-builder.yml` file exists but is stale — `appId` differs `ph.gov.ozamiz.hrrms` vs `ph.gov.ozamiz.cco.hrrms` and lacks `publish`). Trust `package.json` + `electron.vite.config.mjs`.
-- `extraResources` + `getSqlDir()` (`process.resourcesPath/database` when packaged) must stay in sync.
-- `releaseType: "release"` in `package.json:build.publish` — without it releases are created as **drafts** and `electron-updater` won't see them.
-
-## Release & Auto-Update
-- Branching: `dev` → `main` via PR. Only pushes to `main` trigger `.github/workflows/release.yml`.
-- Workflow (`windows-latest`): bump minor (`1.3.0 → 1.4.0` via Node, no `semver` CLI), **create tag** `v<version>` and push it, then `npm run release` (`GH_TOKEN: secrets.GITHUB_TOKEN`), then commit version bump back to `main`. Tag must exist before `electron-builder` publish or GitHub returns `422 Published releases must have a valid tag`.
-- Installed app (`dist/HRRMS Setup *.exe`, NSIS `oneClick:false`) auto-updates on launch: `autoUpdater.checkForUpdates()` in `src/main/index.js:104` (`autoDownload:true`, `autoInstallOnAppQuit:true`). `latest.yml` + `.blockmap` must be uploaded alongside the exe.
-- Manual publish (when workflow is broken): `GH_TOKEN=$(gh auth token) npm run release` locally, then `gh release edit v<ver> --draft=false` if it lands as draft, and handle the exe/blockmap split (builder sometimes creates two releases with same tag — delete duplicates).
+## UI
+- Tailwind 4 `@theme` tokens live in `src/renderer/src/styles/main.css`: navy `#1B2C63`, navy-deep `#14214b`, orange `#E85B18`, paper `#FAF8F4`, hairline `#E7E2D6`, ink, status colors. Fonts are Space Grotesk/Inter/IBM Plex Mono from Google Fonts (allowed by the CSP).
+- The CSP in `src/renderer/index.html` blocks remote images and renderer-side fetches; do network work in the main process.
+- `Select.jsx` uses `createPortal` to `document.body`, flips up, and repositions on scroll/resize — use it instead of a native select inside modals.
+- `.folder-tab` uses `clip-path`; there is no component or icon library — plain Tailwind plus inline SVG icons. `design.md` documents the design system.
 
 ## Conventions
-- Roles: `admin` sees Dashboard/Users/Categories/Offices/Salary Grades; `staff` sees Employees. `NAV` + `META` in `Layout.jsx`.
-- Employees are never deleted — set `status: inactive` and filter. Categories/subcategories refuse deletion if files exist.
-- Default users seeded in `src/main/db.js:ensureDefaultUsers()` — `admin`/`staff` password `password` (hash `$2b$12$h3oqRyG…`). Migrates old `admin123` hash.
+- Both roles see Dashboard, Employees, and File Categories. Users, Offices, and Salary Grades are admin-only. Delete buttons for employees/categories/subcategories are admin-only; staff can still add/edit categories. `NAV`/`META` live in `Layout.jsx`.
+- Admins can hard-delete employees (DB cascade plus storage-folder removal); `status: inactive` is a manual state, not a delete replacement. Categories/subcategories refuse deletion while files exist.
+- Default login: `admin`/`password`, `staff`/`password`. `ensureDefaultUsers()` seeds them and migrates the old admin hash.
+- `README.md` covers setup and features, but is stale on auto-install behavior. `PROJECT.md` is an early proposal (`better-sqlite3`, orange/blue theme) that conflicts with the shipped app; prefer `package.json`, `src/`, and `design.md`.
+
+## Build & publish
+- `electron-builder` prefers the `build` field in `package.json` over `electron-builder.yml`, so the root YAML is ignored. It is stale (different `appId` `ph.gov.ozamiz.cco.hrrms`, narrower `extraResources`, no `publish`) — don't edit it expecting effect.
+- `extraResources` copies `database/` (including dotfiles such as `.status`) to `process.resourcesPath/database`; keep `getSqlDir()` in sync.
+- `releaseType: "release"` in `package.json:build.publish` is required; otherwise GitHub releases are drafts and `electron-updater` ignores them. `latest.yml` and `.blockmap` must ship with the exe.
+
+## Release & auto-update
+- Branching: work on `dev` and merge to `main` via PR; `main` is the release branch. Any push to `main` (except README/docs-only changes) runs the release workflow.
+- Workflow: `.github/workflows/release.yml` bumps the minor version (`1.27.0` -> `1.28.0`), force-pushes tag `v<version>`, deletes any existing release, runs `npm run release`, then commits the bump back to `main`. The tag must exist before publish or GitHub returns 422.
+- Installed app only: `npm run dev` skips both the kill-switch and updater.
+- Kill switch: packaged launch reads `database/.status` and `package.json._hrrms` from `main` on GitHub, then bundled copies. `{"active":false}` leaves the splash locked and never opens the main window; remote values win, so don't push `active:false` carelessly.
+- Update check: auto-downloads, clears `localStorage`, then calls `quitAndInstall()`; `autoInstallOnAppQuit=false`. If no update is found or the check errors, the app opens anyway (7s fail-safe).
+- Manual publish: PowerShell `$env:GH_TOKEN = gh auth token; npm run release`; add `gh release edit v<ver> --draft=false` if it lands as a draft.

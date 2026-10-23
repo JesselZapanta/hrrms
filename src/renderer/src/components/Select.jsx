@@ -4,13 +4,13 @@ import { createPortal } from 'react-dom'
 const VARIANTS = {
   form: {
     trigger:
-      'flex w-full items-center justify-between gap-2 rounded-lg border border-hairline bg-white px-3 py-2 text-sm text-ink transition-colors focus:border-orange focus:ring-1 focus:ring-orange',
-    chevron: 'flex h-4 w-4 shrink-0 items-center justify-center text-ink/35'
+      'flex w-full items-center justify-between gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-primary transition-colors focus:border-accent focus:ring-1 focus:ring-accent',
+    chevron: 'flex h-4 w-4 shrink-0 items-center justify-center text-text-secondary'
   },
   chip: {
     trigger:
-      'flex items-center gap-1.5 font-medium text-ink outline-none transition-colors hover:text-orange',
-    chevron: 'flex h-4 w-4 shrink-0 items-center justify-center text-ink/35',
+      'flex items-center gap-1.5 font-medium text-text-primary outline-none transition-colors hover:text-accent',
+    chevron: 'flex h-4 w-4 shrink-0 items-center justify-center text-text-secondary',
     panelMinWidth: 208
   }
 }
@@ -108,7 +108,7 @@ export default function Select({ value, onChange, options, placeholder = 'Select
         onKeyDown={onTriggerKey}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className={`${v.trigger} ${open ? 'border-orange ring-1 ring-orange' : ''}`}
+        className={`${v.trigger} ${open ? 'border-accent ring-1 ring-accent' : ''}`}
       >
         <span className="min-w-0 flex-1 truncate text-left">{selected?.label || placeholder}</span>
         <span className={v.chevron}>
@@ -130,7 +130,7 @@ export default function Select({ value, onChange, options, placeholder = 'Select
               maxHeight: pos?.maxHeight,
               zIndex: 200
             }}
-            className="mt-0.5 overflow-y-auto rounded-xl border border-hairline bg-white p-1 shadow-xl shadow-navy/10"
+            className="mt-0.5 overflow-y-auto rounded-xl border border-border bg-white p-1 shadow-xl shadow-navy-900/10"
           >
             {options.map((o, i) => {
               const isSel = o.value === value
@@ -145,10 +145,10 @@ export default function Select({ value, onChange, options, placeholder = 'Select
                   onClick={() => pick(o)}
                   className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                     isSel
-                      ? 'bg-orange-soft font-semibold text-orange'
+                      ? 'bg-accent-soft font-semibold text-accent'
                       : isHi
-                        ? 'bg-paper text-ink'
-                        : 'text-ink/70 hover:bg-paper hover:text-ink'
+                        ? 'bg-row-hover text-text-primary'
+                        : 'text-text-secondary hover:bg-row-hover hover:text-text-primary'
                   }`}
                 >
                   {o.label}

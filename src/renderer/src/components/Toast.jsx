@@ -2,19 +2,19 @@ import { useEffect } from 'react'
 
 const TONES = {
   error: {
-    accent: 'bg-status-red',
-    iconBg: 'bg-status-red/15',
-    iconColor: 'text-status-red'
+    accent: 'bg-danger-text',
+    iconBg: 'bg-danger-bg',
+    iconColor: 'text-danger-text'
   },
   warning: {
-    accent: 'bg-status-amber',
-    iconBg: 'bg-status-amber/15',
-    iconColor: 'text-status-amber'
+    accent: 'bg-warning-text',
+    iconBg: 'bg-warning-bg',
+    iconColor: 'text-warning-text'
   },
   success: {
-    accent: 'bg-status-green',
-    iconBg: 'bg-status-green/15',
-    iconColor: 'text-status-green'
+    accent: 'bg-success-text',
+    iconBg: 'bg-success-bg',
+    iconColor: 'text-success-text'
   }
 }
 
@@ -30,7 +30,7 @@ export default function Toast({ message, tone = 'error', onClose, duration = 450
     <div className="pointer-events-none fixed inset-x-0 top-5 z-[60] flex justify-center px-4">
       <div
         role="alert"
-        className="pointer-events-auto flex w-full max-w-sm items-start gap-3 overflow-hidden rounded-xl border border-white/10 bg-navy text-paper shadow-2xl shadow-navy/30 toast-in"
+        className="pointer-events-auto flex w-full max-w-sm items-start gap-3 overflow-hidden rounded-xl border border-white/10 bg-navy-900 text-white shadow-2xl shadow-navy-900/30 toast-in"
       >
         <span className={`h-full w-1 shrink-0 self-stretch ${t.accent}`} />
         <span className={`mt-3.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${t.iconBg} ${t.iconColor}`}>
@@ -38,12 +38,12 @@ export default function Toast({ message, tone = 'error', onClose, duration = 450
         </span>
         <div className="flex-1 py-3">
           <div className="text-sm font-semibold">{titleFor(tone)}</div>
-          <div className="mt-0.5 text-sm leading-snug text-paper/75">{message}</div>
+          <div className="mt-0.5 text-sm leading-snug text-white/75">{message}</div>
         </div>
         <button
           onClick={onClose}
           aria-label="Dismiss"
-          className="mt-3 mr-3 rounded p-1 text-paper/50 transition-colors hover:bg-white/10 hover:text-paper"
+          className="mt-3 mr-3 rounded p-1 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
         >
           <CloseIcon />
         </button>

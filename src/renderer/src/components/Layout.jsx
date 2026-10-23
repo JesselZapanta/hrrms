@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Modal } from './Modal.jsx'
 import AppHeader from './AppHeader.jsx'
 import Sidebar from './Sidebar.jsx'
+import WelcomeCard from './WelcomeCard.jsx'
 
 const META = {
   dashboard: { title: 'Dashboard', subtitle: 'Registry Overview' },
@@ -33,6 +34,7 @@ export default function Layout({ user, view, onNavigate, children, onLogout }) {
     return () => off?.()
   }, [])
   const meta = META[view] || META.dashboard
+  const hideBreadcrumb = ['dashboard', 'users', 'employees', 'categories', 'offices', 'salaryGrades'].includes(view)
 
   return (
     <div className="flex h-full flex-col bg-canvas">
@@ -77,12 +79,16 @@ export default function Layout({ user, view, onNavigate, children, onLogout }) {
           )}
 
           {/* Breadcrumb */}
-          <div className="shrink-0 px-5 pb-1 pt-4">
-            <span className="text-[15px] font-semibold text-text-primary">{meta.title}</span>
-            <span className="ml-2 text-[13px] text-text-muted">{meta.subtitle}</span>
-          </div>
+          {!hideBreadcrumb && (
+            <div className="shrink-0 px-3 pb-1 pt-3 lg:px-5 lg:pt-4">
+              <span className="text-[12px] font-semibold text-text-primary lg:text-[14px]">{meta.title}</span>
+              <span className="ml-2 text-[10px] text-text-muted lg:text-[12px]">{meta.subtitle}</span>
+            </div>
+          )}
 
-          <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
+          <main className="min-h-0 flex-1 overflow-y-auto">
+            <div className="mx-auto w-full max-w-[1280px] px-3 py-3 lg:px-5 lg:py-4">{children}</div>
+          </main>
         </div>
       </div>
 
@@ -93,16 +99,16 @@ export default function Layout({ user, view, onNavigate, children, onLogout }) {
               <LogoutIcon />
             </span>
             <div>
-              <div className="text-sm font-semibold text-ink">Log out of HRRMS?</div>
-              <p className="mt-0.5 text-xs text-ink/50">
+              <div className="text-sm font-semibold text-text-primary">Log out of HRRMS?</div>
+              <p className="mt-0.5 text-xs text-text-secondary">
                 You will need to sign in again to continue.
               </p>
             </div>
           </div>
-          <div className="mt-5 flex items-center justify-end gap-2 border-t border-hairline pt-4">
+          <div className="mt-5 flex items-center justify-end gap-2 border-t border-border pt-4">
             <button
               onClick={() => setConfirmLogout(false)}
-              className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 transition-colors hover:bg-paper-dark"
+              className="rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-row-hover"
             >
               Cancel
             </button>
@@ -111,7 +117,7 @@ export default function Layout({ user, view, onNavigate, children, onLogout }) {
                 setConfirmLogout(false)
                 onLogout()
               }}
-              className="rounded-lg bg-status-red px-4 py-2 text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-[.98]"
+              className="rounded-lg bg-danger-text px-4 py-2 text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-[.98]"
             >
               Sign Out
             </button>

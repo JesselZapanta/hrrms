@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Modal } from '../components/Modal.jsx'
 import Select from '../components/Select.jsx'
+import Swoosh from '../components/Swoosh.jsx'
 import { StatusDot } from '../components/StatusDot.jsx'
 import Toast from '../components/Toast.jsx'
 
@@ -110,7 +111,7 @@ export default function Users({ currentUser }) {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-8 py-8">
+    <div className="mx-auto w-full">
       {toast && (
         <Toast
           message={toast.message}
@@ -119,65 +120,92 @@ export default function Users({ currentUser }) {
         />
       )}
 
-      {/* Toolbar */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative">
-            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/35">
-              <SearchIcon />
+      {/* Colorful page header (replaces the plain breadcrumb on this page) */}
+      <div className="relative mb-4 overflow-hidden rounded-2xl bg-gradient-to-r from-navy-900 via-navy-800 to-navy-700 shadow-lg shadow-navy-900/20 lg:mb-5">
+        <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-accent/25 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 right-48 h-56 w-56 rounded-full bg-white/[0.06] blur-2xl" />
+        <Swoosh className="pointer-events-none absolute -bottom-10 right-4 h-36 w-36 opacity-30" />
+        <div className="relative z-10 p-4 lg:p-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] bg-white/10 text-white">
+              <ShieldIcon />
             </span>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search name, username or ID…"
-              className="w-72 rounded-xl border border-hairline bg-white py-2.5 pl-10 pr-3.5 text-sm outline-none transition-all placeholder:text-ink/30 focus:border-orange focus:ring-2 focus:ring-orange/20"
-            />
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-[18px] font-bold leading-tight text-white lg:text-[22px]">
+                User Management
+              </h1>
+              <p className="mt-0.5 text-[11px] text-white/60 lg:text-[12px]">
+                Access Control · {filtered.length} account{filtered.length === 1 ? '' : 's'} shown
+              </p>
+            </div>
+            <div className="flex shrink-0 gap-2">
+              <span className="rounded-xl bg-white/10 px-3 py-1.5 text-center">
+                <span className="block font-mono text-[15px] font-bold leading-none text-white lg:text-[17px]">{users.length}</span>
+                <span className="mt-0.5 block font-mono text-[9px] uppercase tracking-wider text-white/60">Total</span>
+              </span>
+              <span className="rounded-xl bg-white/10 px-3 py-1.5 text-center">
+                <span className="block font-mono text-[15px] font-bold leading-none text-white lg:text-[17px]">{users.filter((u) => u.role === 'admin').length}</span>
+                <span className="mt-0.5 block font-mono text-[9px] uppercase tracking-wider text-white/60">Admins</span>
+              </span>
+              <span className="rounded-xl bg-white/10 px-3 py-1.5 text-center">
+                <span className="block font-mono text-[15px] font-bold leading-none text-white lg:text-[17px]">{users.filter((u) => u.status === 'active').length}</span>
+                <span className="mt-0.5 block font-mono text-[9px] uppercase tracking-wider text-white/60">Active</span>
+              </span>
+            </div>
           </div>
-
-          <div className="flex items-center gap-2">
-            <FilterChip
-              icon={<RoleIcon />}
-              label="Role"
-              value={roleFilter}
-              onChange={setRoleFilter}
-              options={[
-                { value: 'all', label: 'All roles' },
-                { value: 'admin', label: 'Admin' },
-                { value: 'staff', label: 'Staff' }
-              ]}
-            />
-            <FilterChip
-              icon={<StatusIcon />}
-              label="Status"
-              value={statusFilter}
-              onChange={setStatusFilter}
-              options={[
-                { value: 'all', label: 'All statuses' },
-                { value: 'active', label: 'Active' },
-                { value: 'inactive', label: 'Inactive' }
-              ]}
-            />
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-52">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary">
+                <SearchIcon />
+              </span>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search name, username or ID…"
+                className="w-full rounded-xl border border-transparent bg-white py-2.5 pl-10 pr-3.5 text-sm text-text-primary outline-none transition-all placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/40"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <FilterChip
+                icon={<RoleIcon />}
+                label="Role"
+                value={roleFilter}
+                onChange={setRoleFilter}
+                options={[
+                  { value: 'all', label: 'All roles' },
+                  { value: 'admin', label: 'Admin' },
+                  { value: 'staff', label: 'Staff' }
+                ]}
+              />
+              <FilterChip
+                icon={<StatusIcon />}
+                label="Status"
+                value={statusFilter}
+                onChange={setStatusFilter}
+                options={[
+                  { value: 'all', label: 'All statuses' },
+                  { value: 'active', label: 'Active' },
+                  { value: 'inactive', label: 'Inactive' }
+                ]}
+              />
+            </div>
+            <button
+              onClick={() => setEditing({ ...EMPTY })}
+              className="flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-accent/30 transition-all hover:bg-accent-dark active:scale-[.98]"
+            >
+              <PlusIcon />
+              Add User
+            </button>
           </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-xs text-ink/40">{filtered.length} account(s)</span>
-          <button
-            onClick={() => setEditing({ ...EMPTY })}
-            className="flex items-center gap-2 rounded-xl bg-orange px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-orange/25 transition-all hover:bg-orange/90 hover:shadow-lg hover:shadow-orange/30 active:scale-[.98]"
-          >
-            <PlusIcon />
-            Add User
-          </button>
         </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-2xl border border-hairline bg-white shadow-sm">
+      <div className="gov-card overflow-hidden">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-hairline bg-navy/[0.04] font-mono text-[10px] uppercase tracking-[1.5px] text-ink/45">
-              <th className="w-14 cursor-pointer select-none px-5 py-3.5 hover:text-ink" onClick={() => toggleSort('id')}>
+            <tr className="border-b border-border bg-[#F1F4F9] text-[13px] font-semibold text-text-primary">
+              <th className="w-14 cursor-pointer select-none px-5 py-3.5 hover:text-text-primary" onClick={() => toggleSort('id')}>
                 <span className="inline-flex items-center gap-1">ID {sortBy === 'id' && <SortArrow dir={sortDir} />}</span>
               </th>
               <th className="px-5 py-3.5">User</th>
@@ -186,11 +214,11 @@ export default function Users({ currentUser }) {
               <th className="px-5 py-3.5 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-hairline">
+          <tbody className="divide-y divide-border">
             {pageRows.map((u) => (
-              <tr key={u.id} className="group transition-colors hover:bg-paper/70">
+              <tr key={u.id} className="group transition-colors hover:bg-row-hover">
                 <td className="px-5 py-3.5">
-                  <span className="inline-flex rounded-md bg-paper-dark px-2 py-1 font-mono text-[11px] text-ink/50">
+                  <span className="inline-flex rounded-md bg-row-hover px-2 py-1 font-mono text-[11px] text-text-secondary">
                     {String(u.id).padStart(3, '0')}
                   </span>
                 </td>
@@ -198,15 +226,15 @@ export default function Users({ currentUser }) {
                   <div className="flex items-center gap-3.5">
                     <Avatar user={u} />
                     <span className="min-w-0">
-                      <span className="block truncate font-medium text-ink">{u.full_name}</span>
-                      <span className="font-mono text-[11px] text-ink/45">@{u.username}</span>
+                      <span className="block truncate font-medium text-text-primary">{u.full_name}</span>
+                      <span className="font-mono text-[11px] text-text-secondary">@{u.username}</span>
                     </span>
                   </div>
                 </td>
                 <td className="px-5 py-3.5">
                   <span
                     className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${
-                      u.role === 'admin' ? 'bg-orange-soft text-orange' : 'bg-paper-dark text-ink/60'
+                      u.role === 'admin' ? 'bg-accent-soft text-accent' : 'bg-row-hover text-text-secondary'
                     }`}
                   >
                     {u.role === 'admin' && <ShieldIcon />}
@@ -217,7 +245,7 @@ export default function Users({ currentUser }) {
                   <div className="flex items-center gap-2.5">
                     <span
                       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${
-                        u.status === 'active' ? 'bg-status-green/10 text-status-green' : 'bg-ink/5 text-ink/45'
+                        u.status === 'active' ? 'bg-success-text/10 text-success-text' : 'bg-row-hover text-text-secondary'
                       }`}
                     >
                       <StatusDot status={u.status} />
@@ -232,8 +260,8 @@ export default function Users({ currentUser }) {
                       title={u.status === 'active' ? 'Deactivate' : 'Activate'}
                       className={`rounded-lg p-2 transition-colors ${
                         u.status === 'active'
-                          ? 'text-ink/50 hover:bg-status-green/10 hover:text-status-green'
-                          : 'text-ink/50 hover:bg-status-green/10 hover:text-status-green'
+                          ? 'text-text-secondary hover:bg-success-bg/60 hover:text-success-text'
+                          : 'text-text-secondary hover:bg-success-bg/60 hover:text-success-text'
                       }`}
                     >
                       <ToggleIcon />
@@ -241,14 +269,14 @@ export default function Users({ currentUser }) {
                     <button
                       onClick={() => setEditing({ ...u, password: '' })}
                       title="Edit"
-                      className="rounded-lg p-2 text-ink/50 transition-colors hover:bg-orange-soft hover:text-orange"
+                      className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-accent-soft hover:text-accent"
                     >
                       <EditIcon />
                     </button>
                     <button
                       onClick={() => setConfirmDel(u)}
                       title="Delete"
-                      className="rounded-lg p-2 text-ink/50 transition-colors hover:bg-status-red/10 hover:text-status-red"
+                      className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-danger-text/10 hover:text-danger-text"
                     >
                       <TrashIcon />
                     </button>
@@ -258,7 +286,7 @@ export default function Users({ currentUser }) {
             ))}
             {pageRows.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-14 text-center text-sm text-ink/40">
+                <td colSpan={5} className="px-5 py-14 text-center text-sm text-text-secondary">
                   {users.length === 0 ? 'No users yet.' : 'No users match your filters.'}
                 </td>
               </tr>
@@ -269,7 +297,7 @@ export default function Users({ currentUser }) {
 
       {/* Pagination */}
       <div className="mt-4 flex items-center justify-between">
-        <span className="font-mono text-xs text-ink/40">
+        <span className="font-mono text-xs text-text-secondary">
           {filtered.length === 0 ? 'No results' : `Showing ${from}–${to} of ${filtered.length}`}
         </span>
         {totalPages > 1 && (
@@ -277,7 +305,7 @@ export default function Users({ currentUser }) {
             <button
               onClick={() => setPage(safePage - 1)}
               disabled={safePage === 1}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-hairline bg-white text-ink/60 transition-colors hover:bg-paper-dark disabled:opacity-40"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-white text-text-secondary transition-colors hover:bg-row-hover disabled:opacity-40"
             >
               <ChevronIcon dir="left" />
             </button>
@@ -287,8 +315,8 @@ export default function Users({ currentUser }) {
                 onClick={() => setPage(n)}
                 className={`h-8 min-w-8 rounded-lg px-2 font-mono text-xs transition-colors ${
                   n === safePage
-                    ? 'bg-orange font-semibold text-white shadow-md shadow-orange/25'
-                    : 'border border-hairline bg-white text-ink/60 hover:bg-paper-dark'
+                    ? 'bg-navy-900 font-semibold text-white shadow-md shadow-navy-900/25'
+                    : 'border border-border bg-white text-text-secondary hover:bg-row-hover'
                 }`}
               >
                 {n}
@@ -297,7 +325,7 @@ export default function Users({ currentUser }) {
             <button
               onClick={() => setPage(safePage + 1)}
               disabled={safePage === totalPages}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-hairline bg-white text-ink/60 transition-colors hover:bg-paper-dark disabled:opacity-40"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-white text-text-secondary transition-colors hover:bg-row-hover disabled:opacity-40"
             >
               <ChevronIcon dir="right" />
             </button>
@@ -308,21 +336,21 @@ export default function Users({ currentUser }) {
       {editing && (
         <Modal title={editing.id ? 'Edit User' : 'Add User'} onClose={() => setEditing(null)}>
           <form onSubmit={save} className="space-y-4">
-            <div className="flex items-center gap-4 rounded-xl border border-hairline bg-paper px-4 py-3">
+            <div className="flex items-center gap-4 rounded-xl border border-border bg-row-hover px-4 py-3">
               <div className="relative shrink-0">
                 <Avatar user={editing} size="lg" />
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
                   title="Change photo"
-                  className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-orange text-white shadow-md shadow-orange/30 transition-transform hover:scale-105"
+                  className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-accent text-white shadow-md shadow-accent/30 transition-transform hover:scale-105"
                 >
                   <CameraIcon />
                 </button>
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-semibold text-ink">Profile photo</div>
-                <p className="mt-0.5 text-[11px] leading-snug text-ink/45">Optional · JPG, PNG or GIF</p>
+                <div className="text-xs font-semibold text-text-primary">Profile photo</div>
+                <p className="mt-0.5 text-[11px] leading-snug text-text-secondary">Optional · JPG, PNG or GIF</p>
               </div>
               <div className="flex shrink-0 gap-1.5">
                 <input
@@ -335,7 +363,7 @@ export default function Users({ currentUser }) {
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  className="rounded-lg border border-hairline bg-white px-2.5 py-1.5 text-[11px] font-medium text-ink/70 transition-colors hover:bg-paper-dark"
+                  className="rounded-lg border border-border bg-white px-2.5 py-1.5 text-[11px] font-medium text-text-secondary transition-colors hover:bg-row-hover"
                 >
                   {editing.profile_pic ? 'Change' : 'Upload'}
                 </button>
@@ -343,7 +371,7 @@ export default function Users({ currentUser }) {
                   <button
                     type="button"
                     onClick={() => setEditing({ ...editing, profile_pic: '' })}
-                    className="rounded-lg border border-status-red/30 bg-status-red/5 px-2.5 py-1.5 text-[11px] font-medium text-status-red transition-colors hover:bg-status-red/10"
+                    className="rounded-lg border border-danger-text/30 bg-danger-bg/50 px-2.5 py-1.5 text-[11px] font-medium text-danger-text transition-colors hover:bg-danger-text/10"
                   >
                     Remove
                   </button>
@@ -406,22 +434,22 @@ export default function Users({ currentUser }) {
             </div>
 
             {error && (
-              <div className="rounded-lg border border-status-red/30 bg-status-red/5 px-3 py-2 text-xs text-status-red">
+              <div className="rounded-lg border border-danger-text/30 bg-danger-bg/50 px-3 py-2 text-xs text-danger-text">
                 {error}
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-2 border-t border-hairline pt-4">
+            <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
               <button
                 type="button"
                 onClick={() => setEditing(null)}
-                className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 transition-colors hover:bg-paper-dark"
+                className="rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-row-hover"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-1.5 rounded-lg bg-orange px-4 py-2 text-xs font-semibold text-white shadow-md shadow-orange/25 transition-all hover:bg-orange/90 active:scale-[.98]"
+                className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white shadow-md shadow-accent/25 transition-all hover:bg-accent-dark active:scale-[.98]"
               >
                 <SaveIcon />
                 Save User
@@ -433,19 +461,19 @@ export default function Users({ currentUser }) {
 
       {confirmDel && (
         <Modal title="Delete user" onClose={() => setConfirmDel(null)}>
-          <p className="text-sm text-ink/70">
+          <p className="text-sm text-text-secondary">
             Delete <b>{confirmDel.full_name}</b> (@{confirmDel.username})? This cannot be undone.
           </p>
           <div className="mt-5 flex justify-end gap-2">
             <button
               onClick={() => setConfirmDel(null)}
-              className="rounded-lg border border-hairline px-4 py-2 text-sm text-ink/70 hover:bg-paper-dark"
+              className="rounded-lg border border-border px-4 py-2 text-sm text-text-secondary hover:bg-row-hover"
             >
               Cancel
             </button>
             <button
               onClick={remove}
-              className="rounded-lg bg-status-red px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+              className="rounded-lg bg-danger-text px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
             >
               Delete
             </button>
@@ -462,33 +490,33 @@ export default function Users({ currentUser }) {
           <div className="flex items-center gap-4">
             <span
               className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${
-                confirmToggle.status === 'active' ? 'bg-status-red/10 text-status-red' : 'bg-status-green/10 text-status-green'
+                confirmToggle.status === 'active' ? 'bg-danger-text/10 text-danger-text' : 'bg-success-text/10 text-success-text'
               }`}
             >
               <ToggleIcon />
             </span>
             <div>
-              <div className="text-sm font-semibold text-ink">
+              <div className="text-sm font-semibold text-text-primary">
                 {confirmToggle.status === 'active' ? 'Deactivate this user?' : 'Activate this user?'}
               </div>
-              <p className="mt-0.5 text-xs text-ink/50">
+              <p className="mt-0.5 text-xs text-text-secondary">
                 {confirmToggle.status === 'active'
                   ? `${confirmToggle.full_name} (@${confirmToggle.username}) will be blocked from signing in.`
                   : `${confirmToggle.full_name} (@${confirmToggle.username}) will be allowed to sign in again.`}
               </p>
             </div>
           </div>
-          <div className="mt-5 flex items-center justify-end gap-2 border-t border-hairline pt-4">
+          <div className="mt-5 flex items-center justify-end gap-2 border-t border-border pt-4">
             <button
               onClick={() => setConfirmToggle(null)}
-              className="rounded-lg border border-hairline px-3.5 py-2 text-xs font-medium text-ink/70 transition-colors hover:bg-paper-dark"
+              className="rounded-lg border border-border px-3.5 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-row-hover"
             >
               Cancel
             </button>
             <button
               onClick={() => toggleStatus(confirmToggle)}
               className={`rounded-lg px-4 py-2 text-xs font-semibold text-white transition-all hover:opacity-90 active:scale-[.98] ${
-                confirmToggle.status === 'active' ? 'bg-status-red' : 'bg-status-green'
+                confirmToggle.status === 'active' ? 'bg-danger-text' : 'bg-success-text'
               }`}
             >
               {confirmToggle.status === 'active' ? 'Deactivate' : 'Activate'}
@@ -502,9 +530,9 @@ export default function Users({ currentUser }) {
 
 function FilterChip({ icon, label, value, onChange, options }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-hairline bg-white py-2.5 pl-3 pr-2.5 text-sm transition-all focus-within:border-orange focus-within:ring-2 focus-within:ring-orange/20">
-      <span className="text-ink/35">{icon}</span>
-      <span className="font-mono text-[10px] uppercase tracking-wider text-ink/40">{label}</span>
+    <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-white py-2.5 pl-3 pr-2.5 text-sm transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20">
+      <span className="text-text-secondary">{icon}</span>
+      <span className="font-mono text-[10px] uppercase tracking-wider text-text-secondary">{label}</span>
       <Select variant="chip" value={value} onChange={onChange} options={options} />
     </label>
   )
@@ -522,14 +550,14 @@ function Avatar({ user, size = 'md' }) {
       <img
         src={user.profile_pic}
         alt={user.full_name}
-        className={`${cls} shrink-0 rounded-full border border-hairline object-cover`}
+        className={`${cls} shrink-0 rounded-full border border-border object-cover`}
       />
     )
   }
   return (
     <span
-      className={`${cls} flex shrink-0 items-center justify-center rounded-full border border-hairline font-heading font-bold ${
-        user?.role === 'admin' ? 'bg-orange-soft text-orange' : 'bg-navy/5 text-navy'
+      className={`${cls} flex shrink-0 items-center justify-center rounded-full border border-border font-heading font-bold ${
+        user?.role === 'admin' ? 'bg-accent-soft text-accent' : 'bg-info-bg text-navy-800'
       }`}
     >
       {initials(user?.full_name)}
@@ -538,16 +566,16 @@ function Avatar({ user, size = 'md' }) {
 }
 
 const inputCls =
-  'w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-orange focus:ring-1 focus:ring-orange'
+  'w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-accent focus:ring-1 focus:ring-accent'
 
 function Field({ label, required, hint, children }) {
   return (
     <div>
-      <label className="mb-1.5 flex items-center justify-between text-[11px] font-medium uppercase tracking-wide text-ink/60">
+      <label className="mb-1.5 flex items-center justify-between text-[11px] font-medium uppercase tracking-wide text-text-secondary">
         <span>
-          {label} {required && <span className="text-orange">*</span>}
+          {label} {required && <span className="text-accent">*</span>}
         </span>
-        {hint && <span className="font-normal normal-case tracking-normal text-ink/35">{hint}</span>}
+        {hint && <span className="font-normal normal-case tracking-normal text-text-secondary">{hint}</span>}
       </label>
       {children}
     </div>

@@ -68,14 +68,14 @@ export default function Profile({ currentUser, onUserChange }) {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-8 py-8">
+    <div className="mx-auto w-full">
       {toast && <Toast message={toast.message} tone={toast.tone} onClose={() => setToast(null)} />}
 
       <div className="grid gap-6 lg:grid-cols-5">
         {/* Profile summary */}
         <div className="lg:col-span-2">
-          <div className="overflow-hidden rounded-2xl border border-hairline bg-white shadow-sm">
-            <div className="h-20 bg-navy" />
+          <div className="gov-card overflow-hidden">
+            <div className="h-20 bg-gradient-to-r from-navy-900 to-navy-700" />
             <div className="px-6 pb-6">
               <div className="-mt-10 flex justify-center">
                 <div className="relative">
@@ -84,7 +84,7 @@ export default function Profile({ currentUser, onUserChange }) {
                     type="button"
                     onClick={() => fileRef.current?.click()}
                     title="Change photo"
-                    className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-orange text-white shadow-md shadow-orange/30 transition-transform hover:scale-105"
+                    className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-accent text-white shadow-md shadow-accent/30 transition-transform hover:scale-105"
                   >
                     <CameraIcon />
                   </button>
@@ -97,15 +97,15 @@ export default function Profile({ currentUser, onUserChange }) {
                   />
                 </div>
               </div>
-              <h2 className="mt-3 text-center font-heading text-lg font-semibold text-navy">
+              <h2 className="mt-3 text-center font-heading text-lg font-semibold text-navy-800">
                 {form.full_name || currentUser.full_name}
               </h2>
-              <p className="mt-0.5 text-center font-mono text-xs text-ink/45">@{form.username || currentUser.username}</p>
+              <p className="mt-0.5 text-center font-mono text-xs text-text-secondary">@{form.username || currentUser.username}</p>
 
               <div className="mt-4 flex items-center justify-center gap-2">
                 <span
                   className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${
-                    currentUser.role === 'admin' ? 'bg-orange-soft text-orange' : 'bg-paper-dark text-ink/60'
+                    currentUser.role === 'admin' ? 'bg-accent-soft text-accent' : 'bg-row-hover text-text-secondary'
                   }`}
                 >
                   {currentUser.role === 'admin' && <ShieldIcon />}
@@ -113,18 +113,18 @@ export default function Profile({ currentUser, onUserChange }) {
                 </span>
                 <span
                   className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${
-                    currentUser.status === 'active' ? 'bg-status-green/10 text-status-green' : 'bg-ink/5 text-ink/45'
+                    currentUser.status === 'active' ? 'bg-success-text/10 text-success-text' : 'bg-row-hover text-text-secondary'
                   }`}
                 >
-                  <span className={`h-1.5 w-1.5 rounded-full ${currentUser.status === 'active' ? 'bg-status-green' : 'bg-ink/40'}`} />
+                  <span className={`h-1.5 w-1.5 rounded-full ${currentUser.status === 'active' ? 'bg-success-text' : 'bg-slate-400'}`} />
                   {currentUser.status}
                 </span>
               </div>
 
-              <div className="mt-4 rounded-xl bg-paper px-4 py-3">
+              <div className="mt-4 rounded-xl bg-row-hover px-4 py-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-ink/50">Member since</span>
-                  <span className="font-mono text-xs text-ink/70">
+                  <span className="text-xs text-text-secondary">Member since</span>
+                  <span className="font-mono text-xs text-text-secondary">
                     {formatDate(currentUser.created_at)}
                   </span>
                 </div>
@@ -135,10 +135,10 @@ export default function Profile({ currentUser, onUserChange }) {
 
         {/* Forms */}
         <div className="space-y-6 lg:col-span-3">
-          <div className="rounded-2xl border border-hairline bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-hairline px-6 py-4">
-              <h3 className="font-heading text-sm font-semibold text-navy">Personal Information</h3>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-ink/40">Account settings</span>
+          <div className="gov-card">
+            <div className="flex items-center justify-between border-b border-border px-6 py-4">
+              <h3 className="font-heading text-sm font-semibold text-navy-800">Personal Information</h3>
+              <span className="font-mono text-[10px] uppercase tracking-wider text-text-secondary">Account settings</span>
             </div>
             <form onSubmit={saveInfo} className="space-y-4 p-6">
               <Field label="Full Name" required>
@@ -159,16 +159,16 @@ export default function Profile({ currentUser, onUserChange }) {
               </Field>
 
               {error && (
-                <div className="rounded-lg border border-status-red/30 bg-status-red/5 px-3 py-2 text-xs text-status-red">
+                <div className="rounded-lg border border-danger-text/30 bg-danger-bg/50 px-3 py-2 text-xs text-danger-text">
                   {error}
                 </div>
               )}
 
-              <div className="flex items-center justify-end gap-2 border-t border-hairline pt-4">
+              <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
                 <button
                   type="submit"
                   disabled={busy}
-                  className="flex items-center gap-1.5 rounded-lg bg-orange px-4 py-2 text-xs font-semibold text-white shadow-md shadow-orange/25 transition-all hover:bg-orange/90 active:scale-[.98] disabled:opacity-60"
+                  className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white shadow-md shadow-accent/25 transition-all hover:bg-accent-dark active:scale-[.98] disabled:opacity-60"
                 >
                   <SaveIcon />
                   Save Changes
@@ -177,10 +177,10 @@ export default function Profile({ currentUser, onUserChange }) {
             </form>
           </div>
 
-          <div className="rounded-2xl border border-hairline bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-hairline px-6 py-4">
-              <h3 className="font-heading text-sm font-semibold text-navy">Change Password</h3>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-ink/40">Security</span>
+          <div className="gov-card">
+            <div className="flex items-center justify-between border-b border-border px-6 py-4">
+              <h3 className="font-heading text-sm font-semibold text-navy-800">Change Password</h3>
+              <span className="font-mono text-[10px] uppercase tracking-wider text-text-secondary">Security</span>
             </div>
             <form onSubmit={savePassword} className="space-y-4 p-6">
               <Field label="Current Password" required>
@@ -214,15 +214,15 @@ export default function Profile({ currentUser, onUserChange }) {
               </div>
 
               {pwError && (
-                <div className="rounded-lg border border-status-red/30 bg-status-red/5 px-3 py-2 text-xs text-status-red">
+                <div className="rounded-lg border border-danger-text/30 bg-danger-bg/50 px-3 py-2 text-xs text-danger-text">
                   {pwError}
                 </div>
               )}
 
-              <div className="flex items-center justify-end gap-2 border-t border-hairline pt-4">
+              <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
                 <button
                   type="submit"
-                  className="flex items-center gap-1.5 rounded-lg bg-navy px-4 py-2 text-xs font-semibold text-white transition-all hover:bg-navy-deep active:scale-[.98]"
+                  className="flex items-center gap-1.5 rounded-lg bg-navy-800 px-4 py-2 text-xs font-semibold text-white transition-all hover:bg-navy-700 active:scale-[.98]"
                 >
                   <LockIcon />
                   Update Password
@@ -237,16 +237,16 @@ export default function Profile({ currentUser, onUserChange }) {
 }
 
 const inputCls =
-  'w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-orange focus:ring-1 focus:ring-orange'
+  'w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-accent focus:ring-1 focus:ring-accent'
 
 function Field({ label, required, hint, children }) {
   return (
     <div>
-      <label className="mb-1.5 flex items-center justify-between text-[11px] font-medium uppercase tracking-wide text-ink/60">
+      <label className="mb-1.5 flex items-center justify-between text-[11px] font-medium uppercase tracking-wide text-text-secondary">
         <span>
-          {label} {required && <span className="text-orange">*</span>}
+          {label} {required && <span className="text-accent">*</span>}
         </span>
-        {hint && <span className="font-normal normal-case tracking-normal text-ink/35">{hint}</span>}
+        {hint && <span className="font-normal normal-case tracking-normal text-text-secondary">{hint}</span>}
       </label>
       {children}
     </div>
@@ -266,7 +266,7 @@ function Avatar({ user, size = 'xl' }) {
   }
   return (
     <span
-      className={`${cls} flex shrink-0 items-center justify-center rounded-full border-4 border-white bg-orange-soft font-heading font-bold text-orange shadow-md`}
+      className={`${cls} flex shrink-0 items-center justify-center rounded-full border-4 border-white bg-accent-soft font-heading font-bold text-accent shadow-md`}
     >
       {initials(user?.full_name)}
     </span>
