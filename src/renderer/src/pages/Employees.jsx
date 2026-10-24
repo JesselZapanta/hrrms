@@ -7,7 +7,7 @@ import { StatusDot } from '../components/StatusDot.jsx'
 import Toast from '../components/Toast.jsx'
 
 const EMPTY = {
-  complete_name: '', position: '', office: '', plantilla_item: '', salary_grade: '', salary_step: '',
+  complete_name: '', position: '', plantilla_item: '', salary_grade: '', salary_step: '',
   birthday: '', status: 'permanent', date_hired: '', contact_number: '', email: '',
   complete_address: '', profile_pic: ''
 }
@@ -18,7 +18,6 @@ const money = (n) => new Intl.NumberFormat('en-PH', { style: 'currency', currenc
 export default function Employees({ onOpenFolder, currentUser }) {
   const isAdmin = currentUser?.role === 'admin'
   const [employees, setEmployees] = useState([])
-  const [offices, setOffices] = useState([])
   const [salaryGrades, setSalaryGrades] = useState([])
   const [salaryGroups, setSalaryGroups] = useState([])
   const [search, setSearch] = useState('')
@@ -40,12 +39,10 @@ export default function Employees({ onOpenFolder, currentUser }) {
   useEffect(() => {
     load('')
     ;(async () => {
-      const [o, g, grp] = await Promise.all([
-        window.api.offices.list({}),
+      const [g, grp] = await Promise.all([
         window.api.salaryGrades.list({}),
         window.api.salaryGrades.listGrouped({}),
       ])
-      if (o.ok) setOffices(o.data)
       if (g.ok) setSalaryGrades(g.data)
       if (grp.ok) setSalaryGroups(grp.data)
     })()
@@ -170,7 +167,7 @@ export default function Employees({ onOpenFolder, currentUser }) {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search name, position, office, email…"
+              placeholder="Search name, position, email…"
               className="w-full rounded-xl border border-transparent bg-white py-2.5 pl-10 pr-3.5 text-sm text-text-primary outline-none transition-all placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/40"
             />
           </div>
@@ -212,7 +209,6 @@ export default function Employees({ onOpenFolder, currentUser }) {
                 <span className="inline-flex items-center gap-1">ID {sortBy === 'id' && <SortArrow dir={sortDir} />}</span>
               </th>
               <th className="px-5 py-3.5">Employee</th>
-              <th className="px-5 py-3.5">Office</th>
               <th className="px-5 py-3.5">Employment Status</th>
               {!isAdmin && <th className="px-5 py-3.5">Date Hired</th>}
               <th className="px-5 py-3.5 text-right">Actions</th>
@@ -239,7 +235,6 @@ export default function Employees({ onOpenFolder, currentUser }) {
                     </div>
                   </div>
                 </td>
-                <td className="max-w-52 truncate px-5 py-3.5 text-text-secondary">{emp.office || '—'}</td>
                 <td className="px-5 py-3.5">
                   <span
                     className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${
@@ -431,18 +426,6 @@ export default function Employees({ onOpenFolder, currentUser }) {
                     value={editing.position}
                     onChange={(e) => setEditing({ ...editing, position: e.target.value })}
                     required
-                  />
-                </Field>
-                <Field label="Office">
-                  <Select
-                    variant="form"
-                    value={editing.office || ''}
-                    onChange={(v) => setEditing({ ...editing, office: v })}
-                    placeholder={offices.length === 0 ? 'No offices yet' : 'Select office…'}
-                    options={offices.map((o) => ({
-                      value: o.name,
-                      label: o.status === 'inactive' ? `${o.name} (inactive)` : o.name
-                    }))}
                   />
                 </Field>
                 <Field label="Plantilla Item">

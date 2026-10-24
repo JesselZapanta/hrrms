@@ -4,7 +4,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 const FIELDS = [
-  'complete_name', 'position', 'office', 'plantilla_item', 'salary_grade', 'salary_step',
+  'complete_name', 'position', 'plantilla_item', 'salary_grade', 'salary_step',
   'birthday', 'status', 'date_hired', 'contact_number', 'email',
   'complete_address', 'profile_pic'
 ]
@@ -19,11 +19,11 @@ export const EmployeeService = {
           .prepare(
             `SELECT * FROM employees
              WHERE complete_name LIKE ? OR position LIKE ? OR record_no LIKE ?
-                OR office LIKE ? OR plantilla_item LIKE ? OR email LIKE ?
+                OR plantilla_item LIKE ? OR email LIKE ?
                 OR contact_number LIKE ?
              ORDER BY complete_name`
           )
-          .all(q, q, q, q, q, q, q)
+          .all(q, q, q, q, q, q)
     return rows.map((r) => ({ ...r, profile_pic: decrypt(r.profile_pic), file_count: this.fileCount(r.id) }))
   },
 
@@ -47,8 +47,8 @@ export const EmployeeService = {
     try {
       const info = db
         .prepare(
-          `INSERT INTO employees (complete_name, position, office, plantilla_item, salary_grade, salary_step, birthday, status, date_hired, contact_number, email, complete_address, profile_pic, record_no)
-           VALUES (@complete_name, @position, @office, @plantilla_item, @salary_grade, @salary_step, @birthday, @status, @date_hired, @contact_number, @email, @complete_address, @profile_pic, @record_no)`
+          `INSERT INTO employees (complete_name, position, plantilla_item, salary_grade, salary_step, birthday, status, date_hired, contact_number, email, complete_address, profile_pic, record_no)
+           VALUES (@complete_name, @position, @plantilla_item, @salary_grade, @salary_step, @birthday, @status, @date_hired, @contact_number, @email, @complete_address, @profile_pic, @record_no)`
         )
         .run({ ...clean, record_no: `TEMP-${Date.now()}-${Math.random().toString(36).slice(2, 7)}` })
       id = Number(info.lastInsertRowid)

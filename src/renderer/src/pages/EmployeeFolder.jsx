@@ -113,7 +113,7 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
                 {employee.complete_name}
               </h1>
               <p className="mt-0.5 truncate text-[11px] text-white/60 lg:text-[12px]">
-                {employee.position}{employee.office ? ` · ${employee.office}` : ''}
+                {employee.position}
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap gap-2">
