@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react'
 import Toast from '../components/Toast.jsx'
+import headerBgUrl from '../assets/header-bg.png'
+import sealUrl from '../assets/logo.webp'
 
 export default function Profile({ currentUser, onUserChange }) {
   const [form, setForm] = useState({
@@ -75,7 +77,30 @@ export default function Profile({ currentUser, onUserChange }) {
         {/* Profile summary */}
         <div className="lg:col-span-2">
           <div className="gov-card overflow-hidden">
-            <div className="h-20 bg-gradient-to-r from-navy-900 to-navy-700" />
+            {/* Same branded header as the app header */}
+            <div className="relative h-28 shrink-0 bg-navy-900">
+              <img
+                src={headerBgUrl}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full object-cover object-left"
+              />
+              <div className="relative z-10 flex h-full items-center gap-3 px-5">
+                <img
+                  src={sealUrl}
+                  alt="Official Seal of the City of Ozamiz"
+                  className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-white/80"
+                />
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-bold uppercase leading-tight tracking-[0.5px] text-white">
+                    City Council Office
+                  </div>
+                  <div className="truncate text-[10px] uppercase tracking-[0.5px] text-white/90">
+                    Local Government Unit of Ozamiz City
+                  </div>
+                </div>
+              </div>
+            </div>
             <div className="px-6 pb-6">
               <div className="-mt-10 flex justify-center">
                 <div className="relative">

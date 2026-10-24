@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Toast from '../components/Toast.jsx'
 import Swoosh from '../components/Swoosh.jsx'
 import sealUrl from '../assets/logo.webp'
+import headerBgUrl from '../assets/header-bg.png'
 import loginBgUrl from '../assets/login-hero-bg.png'
 
 export default function Login({ onLogin }) {
@@ -80,7 +81,7 @@ export default function Login({ onLogin }) {
         />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-accent via-accent/60 to-transparent" />
 
-        <div className="relative z-10 w-full max-w-sm">
+        <div className="relative z-10 w-full max-w-md">
           {/* Mobile brand */}
           <div className="mb-8 flex items-center gap-3 lg:hidden">
             <img
@@ -90,33 +91,49 @@ export default function Login({ onLogin }) {
             />
             <div>
               <div className="font-heading text-base font-bold uppercase leading-tight text-navy-900">Human Resource</div>
-              <div className="font-mono text-[10px] uppercase tracking-[2px] text-ink/50">
+              <div className="font-mono text-[10px] uppercase tracking-[2px] text-text-muted">
                 201 Files Management System
               </div>
             </div>
           </div>
 
-          <div className="animate-rise">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-navy-900 py-1 pl-2 pr-3 text-[11px] font-semibold text-white shadow-md shadow-navy-900/20">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-              </span>
-              Secure HR Portal
-            </span>
+          <div className="gov-card overflow-hidden animate-rise" style={{ animationDelay: '0.05s' }}>
+          {/* Branded image header — same artwork as the app header */}
+          <div className="relative h-40 overflow-hidden bg-navy-900 lg:h-44">
+            <img
+              src={headerBgUrl}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full object-cover object-center"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-900 via-navy-900/70 to-navy-900/10" />
+            <div className="relative z-10 flex h-full items-center gap-4 px-6 lg:px-7">
+              <img
+                src={sealUrl}
+                alt="Official Seal of the City of Ozamiz"
+                className="h-16 w-16 shrink-0 rounded-full object-cover ring-2 ring-white/80"
+              />
+              <div className="min-w-0">
+                <div className="font-heading text-xl font-bold uppercase leading-tight text-white">
+                  Human Resource
+                </div>
+                <div className="truncate text-xs font-medium uppercase leading-tight text-white/85">
+                  201 Files Management System
+                </div>
+                <div className="mt-1 font-mono text-[10px] uppercase tracking-[2px] text-white/60">
+                  City Council Office · LGU Ozamiz
+                </div>
+              </div>
+            </div>
           </div>
+          <div className="p-6 lg:p-7">
+          <p className="text-sm text-text-secondary">Sign in to your records management account.</p>
 
-          <div className="mt-4 rounded-2xl border border-border bg-white p-6 shadow-xl shadow-navy-900/10 lg:p-7 animate-rise" style={{ animationDelay: '0.05s' }}>
-          <div>
-            <h2 className="font-heading text-2xl font-bold text-navy">Welcome back</h2>
-            <p className="mt-1 text-sm text-ink/60">Sign in to your records management account.</p>
-          </div>
-
-          <form onSubmit={submit} className="mt-8 space-y-5 animate-rise" style={{ animationDelay: '0.1s' }}>
+          <form onSubmit={submit} className="mt-6 space-y-4 animate-rise" style={{ animationDelay: '0.1s' }}>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-ink">Username</label>
+              <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-text-secondary">Username</label>
               <div className="relative">
-                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/40">
+                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted">
                   <UserIcon />
                 </span>
                 <input
@@ -124,15 +141,15 @@ export default function Login({ onLogin }) {
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Enter your username"
                   autoFocus
-                  className="w-full rounded-lg border border-hairline bg-white py-2.5 pl-11 pr-3.5 text-sm text-ink outline-none transition-all placeholder:text-ink/30 focus:border-orange focus:ring-2 focus:ring-orange/20"
+                  className="w-full rounded-lg border border-border bg-white py-2.5 pl-11 pr-3.5 text-sm text-text-primary outline-none transition-colors placeholder:text-text-muted focus:border-accent focus:ring-1 focus:ring-accent"
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-ink">Password</label>
+              <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-text-secondary">Password</label>
               <div className="relative">
-                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/40">
+                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted">
                   <LockIcon />
                 </span>
                 <input
@@ -140,12 +157,12 @@ export default function Login({ onLogin }) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full rounded-lg border border-hairline bg-white py-2.5 pl-11 pr-11 text-sm text-ink outline-none transition-all placeholder:text-ink/30 focus:border-orange focus:ring-2 focus:ring-orange/20"
+                  className="w-full rounded-lg border border-border bg-white py-2.5 pl-11 pr-11 text-sm text-text-primary outline-none transition-colors placeholder:text-text-muted focus:border-accent focus:ring-1 focus:ring-accent"
                 />
                 <button
                   type="button"
                   onClick={() => setShow((s) => !s)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold uppercase tracking-wide text-ink/40 transition-colors hover:text-orange"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold uppercase tracking-wide text-text-muted transition-colors hover:text-accent"
                 >
                   {show ? 'Hide' : 'Show'}
                 </button>
@@ -155,7 +172,7 @@ export default function Login({ onLogin }) {
             <button
               type="submit"
               disabled={busy}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange py-3 font-semibold text-white shadow-md shadow-orange/25 transition-all hover:bg-orange/90 hover:shadow-lg hover:shadow-orange/30 active:scale-[.99] disabled:opacity-60 disabled:shadow-none"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent py-3 font-semibold text-white shadow-md shadow-accent/25 transition-all hover:bg-accent-dark active:scale-[.99] disabled:opacity-60 disabled:shadow-none"
             >
               {busy ? (
                 <>
@@ -171,20 +188,6 @@ export default function Login({ onLogin }) {
             </button>
           </form>
           </div>
-
-          <div className="mt-5 grid grid-cols-3 gap-2 animate-rise" style={{ animationDelay: '0.15s' }}>
-            <div className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-white/80 px-2 py-3 text-center backdrop-blur">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-success-bg text-success-text"><ShieldCheckIcon /></span>
-              <span className="text-[10px] font-semibold leading-tight text-ink">Encrypted<br />at rest</span>
-            </div>
-            <div className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-white/80 px-2 py-3 text-center backdrop-blur">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-info-bg text-info-text"><SyncIcon /></span>
-              <span className="text-[10px] font-semibold leading-tight text-ink">Auto<br />updates</span>
-            </div>
-            <div className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-white/80 px-2 py-3 text-center backdrop-blur">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-soft text-accent"><OfflineIcon /></span>
-              <span className="text-[10px] font-semibold leading-tight text-ink">Works<br />offline</span>
-            </div>
           </div>
         </div>
       </div>
@@ -224,35 +227,6 @@ function Spinner() {
     <svg className="animate-spin" width="15" height="15" viewBox="0 0 24 24" fill="none">
       <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-30" />
       <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function ShieldCheckIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      <polyline points="9 12 11 14 15 10" />
-    </svg>
-  )
-}
-
-function SyncIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="23 4 23 10 17 10" />
-      <polyline points="1 20 1 14 7 14" />
-      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-    </svg>
-  )
-}
-
-function OfflineIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <ellipse cx="12" cy="5" rx="9" ry="3" />
-      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
     </svg>
   )
 }

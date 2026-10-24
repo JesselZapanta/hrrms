@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Modal } from '../components/Modal.jsx'
 import { StatusDot } from '../components/StatusDot.jsx'
+import Swoosh from '../components/Swoosh.jsx'
 import Toast from '../components/Toast.jsx'
 
 function formatSize(bytes) {
@@ -47,6 +48,10 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
 
   const countInCategory = (catName) => files.filter((f) => f.category_name === catName).length
 
+  const activeFiledSubs = active
+    ? active.subcategories.filter((s) => (bySubcategory[s.id] || []).length > 0).length
+    : 0
+
   const handleUpload = async (subcategoryId) => {
     setUploading(true)
     const picked = await (window.api.dialog.pickFile?.() ?? window.api.dialog.pickPdf())
@@ -88,69 +93,72 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
     <div className="mx-auto w-full">
       {toast && <Toast message={toast.message} tone={toast.tone} onClose={() => setToast(null)} />}
 
-      <button
-        onClick={onBack}
-        className="mb-4 flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:border-accent hover:text-accent"
-      >
-        <ChevronIcon dir="left" />
-        Back to employees
-      </button>
-
-      {/* Employee summary */}
-      <div className="mb-6 gov-card overflow-hidden">
-        <div className="h-14 bg-gradient-to-r from-navy-900 to-navy-700" />
-        <div className="px-6 pb-6">
-          <div className="-mt-7 flex flex-wrap items-end justify-between gap-4">
-            <div className="flex items-end gap-4">
-              <Avatar emp={employee} />
-              <div className="min-w-0">
-                <h1 className="truncate font-heading text-xl font-bold text-navy-800">{employee.complete_name}</h1>
-                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-secondary">
-                  <span>{employee.position}</span>
-                  {employee.office && (
-                    <>
-                      <span className="text-text-muted">·</span>
-                      <span>{employee.office}</span>
-                    </>
-                  )}
-                </div>
-              </div>
+      {/* Page header */}
+      <div className="relative mb-4 overflow-hidden rounded-2xl bg-gradient-to-r from-navy-900 via-navy-800 to-navy-700 shadow-lg shadow-navy-900/20 lg:mb-5">
+        <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-accent/25 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 right-48 h-56 w-56 rounded-full bg-white/[0.06] blur-2xl" />
+        <Swoosh className="pointer-events-none absolute -bottom-10 right-4 h-36 w-36 opacity-30" />
+        <div className="relative z-10 p-4 lg:p-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={onBack}
+              title="Back to employees"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] bg-white/10 text-white transition-colors hover:bg-white/20"
+            >
+              <ChevronIcon dir="left" />
+            </button>
+            <Avatar emp={employee} />
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-[18px] font-bold leading-tight text-white lg:text-[22px]">
+                {employee.complete_name}
+              </h1>
+              <p className="mt-0.5 truncate text-[11px] text-white/60 lg:text-[12px]">
+                {employee.position}{employee.office ? ` · ${employee.office}` : ''}
+              </p>
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${
-                  statusCls(employee.status)
-                }`}
-              >
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <span className="rounded-xl bg-white/10 px-3 py-1.5 text-center">
+                <span className="block font-mono text-[15px] font-bold leading-none text-white lg:text-[17px]">{files.length}</span>
+                <span className="mt-0.5 block font-mono text-[9px] uppercase tracking-wider text-white/60">Documents</span>
+              </span>
+              <span className="rounded-xl bg-white/10 px-3 py-1.5 text-center">
+                <span className="block font-mono text-[15px] font-bold leading-none text-white lg:text-[17px]">{formatSize(totalSize)}</span>
+                <span className="mt-0.5 block font-mono text-[9px] uppercase tracking-wider text-white/60">Storage</span>
+              </span>
+              <span className="flex items-center gap-1.5 rounded-xl bg-white/10 px-3 py-1.5 text-xs font-semibold capitalize text-white">
                 <StatusDot status={employee.status} />
                 {employee.status.replace('_', ' ')}
               </span>
-              <span className="font-mono text-[11px] text-text-secondary">
-                {files.length} document{files.length === 1 ? '' : 's'} · {formatSize(totalSize)}
-              </span>
             </div>
-          </div>
-
-          {/* Full record information */}
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <InfoTile label="Record No." value={employee.record_no} mono />
-            <InfoTile label="Plantilla Item" value={employee.plantilla_item} />
-            <InfoTile label="Salary Grade" value={employee.salary_grade} mono />
-            <InfoTile label="Date Hired" value={employee.date_hired} mono />
-            <InfoTile label="Birthday" value={employee.birthday} mono />
-            <InfoTile label="Contact Number" value={employee.contact_number} mono />
-            <InfoTile label="Email" value={employee.email} className="sm:col-span-2 lg:col-span-1" />
-            <InfoTile
-              label="Complete Address"
-              value={employee.complete_address}
-              className="sm:col-span-2 lg:col-span-2"
-            />
           </div>
         </div>
       </div>
 
+      {/* Employee record */}
+      <div className="gov-card mb-4 overflow-hidden lg:mb-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3.5">
+          <h2 className="font-heading text-base font-semibold text-navy-800">Employee Record</h2>
+          <span className="shrink-0 rounded-md bg-row-hover px-1.5 py-0.5 font-mono text-[10px] text-text-secondary">
+            #{employee.record_no}
+          </span>
+        </div>
+        <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-3">
+          <InfoTile label="Plantilla Item" value={employee.plantilla_item} />
+          <InfoTile label="Salary Grade" value={employee.salary_grade} mono />
+          <InfoTile label="Date Hired" value={employee.date_hired} mono />
+          <InfoTile label="Birthday" value={employee.birthday} mono />
+          <InfoTile label="Contact Number" value={employee.contact_number} mono />
+          <InfoTile label="Email" value={employee.email} />
+          <InfoTile
+            label="Complete Address"
+            value={employee.complete_address}
+            className="sm:col-span-2 lg:col-span-2"
+          />
+        </div>
+      </div>
+
       {/* Category folder tabs */}
-      <div className="mb-6">
+      <div className="mb-4 lg:mb-5">
         <div className="grid grid-cols-3 gap-2 border-b border-border">
           {categories.map((cat, idx) => {
             const c = TAB_COLORS[idx % TAB_COLORS.length]
@@ -161,7 +169,7 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
                 key={cat.id}
                 onClick={() => setActiveCat(cat.id)}
                 className={`folder-tab flex h-16 flex-col items-center justify-center gap-1.5 px-3 text-sm leading-none transition-all ${
-                  isActive ? `${c.fill} font-semibold` : 'border border-b-0 border-border bg-white text-text-secondary hover:bg-paper'
+                  isActive ? `${c.fill} font-semibold` : 'relative border border-b-0 border-border bg-white text-text-secondary hover:bg-paper'
                 }`}
               >
                 {!isActive && <span className={`absolute inset-x-0 top-0 h-1 ${c.edge}`} />}
@@ -180,6 +188,19 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
             )
           })}
         </div>
+        {active && active.subcategories.length > 0 && (
+          <div className="mt-2 flex items-center gap-3 px-1">
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-row-hover">
+              <span
+                className="block h-full rounded-full bg-success-bar transition-all"
+                style={{ width: `${Math.round((activeFiledSubs / active.subcategories.length) * 100)}%` }}
+              />
+            </div>
+            <span className="shrink-0 font-mono text-[11px] text-text-secondary">
+              {activeFiledSubs} / {active.subcategories.length} sections filed
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Active category subcategory sections */}
@@ -194,18 +215,18 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
               >
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-row-hover/70 px-5 py-3">
                   <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-info-bg/60 font-mono text-[11px] text-navy-800">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-navy-800 font-mono text-[11px] text-white">
                       {String(i + 1).padStart(2, '0')}
                     </span>
-                    <h3 className="truncate text-sm font-semibold text-navy-800">{sub.name}</h3>
-                    <span className="rounded-full bg-white px-2 py-0.5 font-mono text-[10px] text-text-secondary">
-                      {list.length}
+                    <h3 className="truncate font-heading text-sm font-semibold text-navy-800">{sub.name}</h3>
+                    <span className="rounded-md bg-white px-1.5 py-0.5 font-mono text-[10px] text-text-secondary">
+                      {list.length} file{list.length === 1 ? '' : 's'}
                     </span>
                   </div>
                   <button
                     onClick={() => handleUpload(sub.id)}
                     disabled={uploading}
-                    className="flex items-center gap-1.5 rounded-lg bg-navy-btn px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-navy-900/20 transition-all hover:brightness-110 active:scale-[.98] disabled:opacity-50"
+                    className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-accent/25 transition-all hover:bg-accent-dark active:scale-[.98] disabled:opacity-50"
                   >
                     <PlusIcon />
                     Add file
@@ -213,8 +234,10 @@ export default function EmployeeFolder({ employee, categories, onBack }) {
                 </div>
 
                 {list.length === 0 ? (
-                  <div className="px-5 py-8 text-center text-sm text-text-secondary">
-                    No documents filed under this subcategory.
+                  <div className="px-5 py-8">
+                    <div className="rounded-xl border border-dashed border-border px-5 py-6 text-center text-sm text-text-secondary">
+                      No documents filed under this subcategory.
+                    </div>
                   </div>
                 ) : (
                   <ul className="divide-y divide-border">
@@ -402,28 +425,18 @@ function InfoTile({ label, value, mono, className = '' }) {
   )
 }
 
-function statusCls(status) {
-  switch (status) {
-    case 'permanent': return 'bg-success-text/10 text-success-text'
-    case 'job_order': return 'bg-warning-text/10 text-warning-text'
-    case 'contract_of_service': return 'bg-info-bg text-navy-800'
-    case 'inactive': return 'bg-danger-text/10 text-danger-text'
-    default: return 'bg-row-hover text-text-secondary'
-  }
-}
-
 function Avatar({ emp }) {
   if (emp?.profile_pic) {
     return (
       <img
         src={emp.profile_pic}
         alt={emp.complete_name}
-        className="h-24 w-24 shrink-0 rounded-full border-4 border-white object-cover shadow-md"
+        className="h-14 w-14 shrink-0 rounded-full border-2 border-white/40 object-cover shadow-md lg:h-16 lg:w-16"
       />
     )
   }
   return (
-    <span className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border-4 border-white bg-accent-soft font-heading text-2xl font-bold text-accent shadow-md">
+    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-white/40 bg-white/10 font-heading text-xl font-bold text-white shadow-md lg:h-16 lg:w-16">
       {initials(emp?.complete_name)}
     </span>
   )

@@ -6,6 +6,7 @@ import { initDb, closeDb } from './db.js'
 import { registerIpc } from './ipc.js'
 import { splashDataUrl } from './splash.js'
 
+// Internal data-dir name stays 'hrrms' so existing installs keep their DB/files
 app.setName('hrrms')
 
 function getIconPath() {
@@ -40,7 +41,7 @@ function createSplashWindow() {
     maximizable: false,
     alwaysOnTop: true,
     show: false,
-    backgroundColor: '#1B2C63',
+    backgroundColor: '#0b2a5b',
     icon: getWindowIcon(),
     webPreferences: {
       contextIsolation: true,
@@ -62,7 +63,7 @@ function createMainWindow(onReady) {
     height: 800,
     minWidth: 1024,
     minHeight: 700,
-    title: 'HRRMS - City Council Office, LGU Ozamiz',
+    title: 'HR201FMS - City Council Office, LGU Ozamiz',
     backgroundColor: '#FAF8F4',
     autoHideMenuBar: true,
     show: false,
