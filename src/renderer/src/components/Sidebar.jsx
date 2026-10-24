@@ -5,7 +5,6 @@ export const NAV = [
   { key: 'users', label: 'User Management', icon: <UsersIcon />, adminOnly: true },
   { key: 'employees', label: 'Employees', icon: <FolderIcon /> },
   { key: 'categories', label: 'File Categories', icon: <LayersIcon /> },
-  { key: 'offices', label: 'Offices', icon: <BuildingIcon />, adminOnly: true },
   { key: 'salaryGrades', label: 'Salary Grades', icon: <MoneyIcon />, adminOnly: true }
 ]
 
@@ -86,21 +85,6 @@ function LayersIcon() {
       <polygon points="12 2 2 7 12 12 22 7 12 2" />
       <polyline points="2 17 12 22 22 17" />
       <polyline points="2 12 12 17 22 12" />
-    </svg>
-  )
-}
-
-function BuildingIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="2" width="16" height="20" rx="1.5" />
-      <path d="M9 22v-4h6v4" />
-      <line x1="8" y1="6" x2="10" y2="6" />
-      <line x1="8" y1="10" x2="10" y2="10" />
-      <line x1="8" y1="14" x2="10" y2="14" />
-      <line x1="14" y1="6" x2="16" y2="6" />
-      <line x1="14" y1="10" x2="16" y2="10" />
-      <line x1="14" y1="14" x2="16" y2="14" />
     </svg>
   )
 }

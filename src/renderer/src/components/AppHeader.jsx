@@ -56,13 +56,10 @@ export default function AppHeader({ user, onNavigate, onLogoutRequest }) {
         <div className="flex min-w-0 shrink-0 items-center gap-3 lg:gap-5">
           <div className="hidden min-w-0 text-right md:block">
             <div className="truncate text-[15px] font-bold uppercase leading-tight text-text-primary lg:text-[20px]">
-              Human Resource
+              HRDRMS
             </div>
             <div className="hidden truncate text-[12px] font-medium uppercase leading-tight text-text-primary lg:block lg:text-[15px]">
-              201 Files Management System
-            </div>
-            <div className="mt-0.5 hidden truncate text-[11px] italic text-text-muted lg:block">
-              Secure records. Organized people. Better service.
+              Digital Records of Employees
             </div>
           </div>
 

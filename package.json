@@ -1,7 +1,7 @@
 {
-  "name": "hr201fms",
-  "version": "1.31.0",
-  "description": "Human Resource 201 Files Management System (HR201FMS) - City Council Office, LGU Ozamiz",
+  "name": "hrdrms",
+  "version": "1.32.0",
+  "description": "Human Resource Digital Records Management System (HRDRMS) - City Council Office, LGU Ozamiz",
   "main": "./out/main/index.js",
   "author": "City Council Office - LGU Ozamiz",
   "license": "MIT",
@@ -40,7 +40,7 @@
   },
   "build": {
     "appId": "ph.gov.ozamiz.hrrms",
-    "productName": "HR201FMS",
+    "productName": "HRDRMS",
     "directories": {
       "output": "dist",
       "buildResources": "build"
@@ -74,7 +74,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "HR201FMS"
+      "shortcutName": "HRDRMS"
     },
     "publish": [
       {

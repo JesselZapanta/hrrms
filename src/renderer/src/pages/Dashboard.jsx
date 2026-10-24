@@ -107,7 +107,7 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
     const q = tableSearch.trim().toLowerCase()
     if (!q) return emps
     return emps.filter((e) =>
-      `${e.complete_name} ${e.position} ${e.office || ''} ${e.record_no || ''}`.toLowerCase().includes(q)
+      `${e.complete_name} ${e.position} ${e.record_no || ''}`.toLowerCase().includes(q)
     )
   }, [emps, tableSearch])
 
@@ -143,16 +143,6 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
     return months
   }, [uploads])
   const maxTrend = useMemo(() => trend.reduce((n, m) => Math.max(n, m.count), 0), [trend])
-
-  const officeTops = useMemo(() => {
-    const m = new Map()
-    for (const e of emps) {
-      const k = (e.office || '').trim() || 'Unassigned'
-      m.set(k, (m.get(k) || 0) + 1)
-    }
-    return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5)
-  }, [emps])
-  const maxOffice = useMemo(() => officeTops.reduce((n, [, c]) => Math.max(n, c), 0), [officeTops])
 
   // File-type breakdown for the donut (PDF / Word / Excel / PowerPoint / Images / Other)
   const fileTypes = useMemo(() => {
@@ -293,7 +283,7 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
               <input
                 value={tableSearch}
                 onChange={(e) => setTableSearch(e.target.value)}
-                placeholder="Search employee name, position, or department..."
+                placeholder="Search employee name or position..."
                 className="h-10 w-full rounded-xl border border-border bg-white py-2.5 pl-10 pr-3.5 text-[13px] text-text-primary outline-none transition-all placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
               />
             </div>
@@ -304,7 +294,6 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
                     <th className="w-10 px-4 py-2.5">#</th>
                     <th className="px-4 py-2.5">Employee Name</th>
                     <th className="px-4 py-2.5">Position</th>
-                    <th className="px-4 py-2.5">Department</th>
                     <th className="px-4 py-2.5">201 File Status</th>
                     <th className="px-4 py-2.5 text-center">Action</th>
                   </tr>
@@ -326,7 +315,6 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
                           {emp.complete_name}
                         </td>
                         <td className="max-w-44 truncate px-4 py-2.5 text-text-secondary">{emp.position}</td>
-                        <td className="max-w-44 truncate px-4 py-2.5 text-text-secondary">{emp.office || '—'}</td>
                         <td className="px-4 py-2.5">
                           <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${done ? 'bg-success-bg text-success-text' : 'bg-danger-bg text-danger-text'}`}>
                             {done ? 'Complete' : 'Incomplete'}
@@ -469,9 +457,6 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
                           {selected.complete_name}
                         </div>
                         <div className="truncate text-[12px] text-text-secondary">{selected.position}</div>
-                        <div className="truncate text-[11px] text-text-muted">
-                          {selected.office ? `${selected.office} Department` : '—'}
-                        </div>
                         <div className="mt-1.5 flex flex-wrap items-center gap-2">
                           <span className="font-mono text-[10px] text-text-muted">
                             Employee ID: {selected.record_no}
@@ -492,10 +477,6 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
                       <div>
                         <dt className="font-mono text-[10px] uppercase text-text-muted">Position</dt>
                         <dd className="truncate font-medium text-text-primary">{selected.position}</dd>
-                      </div>
-                      <div>
-                        <dt className="font-mono text-[10px] uppercase text-text-muted">Department</dt>
-                        <dd className="truncate font-medium text-text-primary">{selected.office || '—'}</dd>
                       </div>
                       <div className="col-span-2">
                         <dt className="font-mono text-[10px] uppercase text-text-muted">Email</dt>
@@ -669,9 +650,9 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
         </div>
       )}
 
-      {/* Row 5: filing trend + top offices */}
+      {/* Row 5: filing trend */}
       {(
-        <div className="mt-3 grid grid-cols-2 gap-3 lg:mt-5 lg:gap-4">
+        <div className="mt-3 grid gap-3 lg:mt-5 lg:gap-4">
           <section className="gov-card animate-rise p-4 lg:p-5">
             <div className="mb-1 flex items-center justify-between">
               <div>
@@ -699,41 +680,6 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
                 </div>
               ))}
             </div>
-          </section>
-
-          <section className="gov-card animate-rise p-4 lg:p-5">
-            <div className="mb-1">
-              <h2 className="text-[14px] font-bold text-text-primary lg:text-[17px]">Top Offices</h2>
-              <p className="mt-0.5 text-[11px] text-text-secondary lg:text-[12px]">
-                Headcount by office
-              </p>
-            </div>
-            <ul className="mt-2 space-y-2.5">
-              {officeTops.map(([name, count], i) => (
-                <li key={name}>
-                  <div className="flex items-center justify-between gap-3 text-[12px] lg:text-[13px]">
-                    <span className="flex min-w-0 items-center gap-2 font-medium text-text-primary">
-                      <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg font-mono text-[10px] font-bold text-white ${['bg-tile-blue', 'bg-tile-green', 'bg-tile-orange', 'bg-tile-purple', 'bg-tile-slate'][i % 5]}`}>
-                        {i + 1}
-                      </span>
-                      <span className="truncate">{name}</span>
-                    </span>
-                    <span className="shrink-0 font-mono text-[11px] text-text-muted">{count}</span>
-                  </div>
-                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-row-hover">
-                    <span
-                      className="animate-progress block h-full rounded-full bg-gradient-to-r from-navy-800 to-tile-blue"
-                      style={{ width: `${maxOffice ? Math.round((count / maxOffice) * 100) : 0}%` }}
-                    />
-                  </div>
-                </li>
-              ))}
-              {officeTops.length === 0 && (
-                <li className="rounded-xl border border-dashed border-border px-5 py-6 text-center text-[13px] text-text-muted">
-                  No office data yet.
-                </li>
-              )}
-            </ul>
           </section>
         </div>
       )}
@@ -817,7 +763,7 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
                           {e.complete_name}
                         </span>
                         <span className="block truncate font-mono text-[10px] text-text-muted">
-                          {e.record_no}{e.office ? ` · ${e.office}` : ''}
+                          {e.record_no}
                         </span>
                       </span>
                       <span className="rounded-full bg-warning-bg px-2 py-0.5 text-[11px] font-semibold text-warning-text">

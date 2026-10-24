@@ -1,8 +1,8 @@
-# HR201FMS — Human Resource 201 Files Management System
+# HRDRMS — Human Resource Digital Records Management System
 
 **City Council Office · LGU Ozamiz**
 
-A desktop filing manager for employee records. HR201FMS organizes each employee's files into categories and subcategories (manila-folder style), with role-based access for Admin and Staff.
+A desktop filing manager for employee records. HRDRMS organizes each employee's files into categories and subcategories (manila-folder style), with role-based access for Admin and Staff.
 
 Built with **Electron + React + Tailwind CSS** and a local **SQLite** database (`node:sqlite` — no native modules).
 
@@ -48,7 +48,7 @@ npm run dev      # run in development (hot reload)
 
 ```bash
 npm run build        # vite build only
-npm run build:win    # produces dist/HR201FMS Setup <version>.exe
+npm run build:win    # produces dist/HRDRMS Setup <version>.exe
 npm run release      # build + publish to GitHub (needs GH_TOKEN)
 ```
 

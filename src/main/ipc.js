@@ -4,7 +4,6 @@ import { AuthService } from './services/AuthService.js'
 import { UserService } from './services/UserService.js'
 import { EmployeeService } from './services/EmployeeService.js'
 import { CategoryService } from './services/CategoryService.js'
-import { OfficeService } from './services/OfficeService.js'
 import { SalaryGradeService } from './services/SalaryGradeService.js'
 import { FileService } from './services/FileService.js'
 
@@ -52,12 +51,6 @@ export function registerIpc() {
   ipcMain.handle('categories:createSub', wrap((cid, name, sort) => CategoryService.createSubcategory(cid, name, sort)))
   ipcMain.handle('categories:updateSub', wrap((id, d) => CategoryService.updateSubcategory(id, d)))
   ipcMain.handle('categories:removeSub', wrap((id) => CategoryService.removeSubcategory(id)))
-
-  // Offices
-  ipcMain.handle('offices:list', wrap((q) => OfficeService.list(q)))
-  ipcMain.handle('offices:create', wrap((d) => OfficeService.create(d)))
-  ipcMain.handle('offices:update', wrap((id, d) => OfficeService.update(id, d)))
-  ipcMain.handle('offices:remove', wrap((id) => OfficeService.remove(id)))
 
   // Salary grades (with SG steps 1-8, SG-33 1-2)
   ipcMain.handle('salaryGrades:list', wrap((q) => SalaryGradeService.list(q)))
