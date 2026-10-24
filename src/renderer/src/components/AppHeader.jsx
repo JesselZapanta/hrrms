@@ -59,7 +59,7 @@ export default function AppHeader({ user, onNavigate, onLogoutRequest }) {
               Human Resource
             </div>
             <div className="hidden truncate text-[12px] font-medium uppercase leading-tight text-text-primary lg:block lg:text-[15px]">
-              201 Files Management System
+              Digital Records Management System
             </div>
             <div className="mt-0.5 hidden truncate text-[11px] italic text-text-muted lg:block">
               Secure records. Organized people. Better service.

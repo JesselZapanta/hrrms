@@ -98,7 +98,7 @@ export default function Layout({ user, view, onNavigate, children, onLogout }) {
               <LogoutIcon />
             </span>
             <div>
-              <div className="text-sm font-semibold text-text-primary">Log out of HR201FMS?</div>
+              <div className="text-sm font-semibold text-text-primary">Log out of HRDRMS?</div>
               <p className="mt-0.5 text-xs text-text-secondary">
                 You will need to sign in again to continue.
               </p>
