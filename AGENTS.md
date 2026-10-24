@@ -10,9 +10,10 @@ npm install
 npm run dev        # electron-vite dev (main + renderer hot reload)
 npm run build      # electron-vite build -> out/
 npm run start      # preview the built app
-npm run build:win  # build + electron-builder --win -> dist/HRRMS Setup <version>.exe
+npm run build:win  # build + electron-builder --win -> dist/HR201FMS Setup <version>.exe
 npm run release    # build + electron-builder --win --publish always (needs GH_TOKEN)
-node scripts/generate-icon.mjs  # regenerate build/icon.png + build/icon.ico
+node scripts/generate-icon.mjs  # legacy folder-mark icon (do NOT rerun — overwrites the real logo)
+node scripts/embed-splash-logo.mjs  # sync build/icon.png + splash logo from assets/app-logo.ico
 ```
 No test/lint/typecheck scripts exist. `npm run build` is the only verification gate; run it after touching `src/main` or `src/renderer`.
 
@@ -60,6 +61,7 @@ No test/lint/typecheck scripts exist. `npm run build` is the only verification g
 - `releaseType: "release"` in `package.json:build.publish` is required; otherwise GitHub releases are drafts and `electron-updater` ignores them. `latest.yml` and `.blockmap` must ship with the exe.
 
 ## Release & auto-update
+- System name is **HR201FMS** (Human Resource 201 Files Management System). Internal IDs deliberately stay `hrrms`: `appId`, `app.setName`, `_hrrms` key, `hrrms.session`, data paths, repo name — renaming them orphans existing installs' data/sessions and breaks the updater/kill-switch.
 - Branching: work on `dev` and merge to `main` via PR; `main` is the release branch. Any push to `main` (except README/docs-only changes) runs the release workflow.
 - Workflow: `.github/workflows/release.yml` bumps `max(package.json, latest GitHub release)` minor version (never reuses/downgrades tags), force-pushes tag `v<version>`, deletes all same-tag releases by ID (duplicates included, tag kept), runs `npm run release`, consolidates split/duplicate releases back into one from `dist/`, verifies exe+blockmap+`latest.yml` exist, then commits the bump back to `main` with `[skip ci]`. The tag must exist before publish or GitHub returns 422. Custom steps run under `shell: bash` (PowerShell mangles `|| true`).
 - Installed app only: `npm run dev` skips both the kill-switch and updater.

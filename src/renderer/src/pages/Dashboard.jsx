@@ -17,10 +17,8 @@ const PAGE_SIZE = 5
 export default function Dashboard({ user, onNavigate, onOpenFolder }) {
   const isAdmin = user.role === 'admin'
   const [stats, setStats] = useState({ employees: 0, files: 0, categories: 0, subcategories: 0 })
-  const [recent, setRecent] = useState([])
-  const [staffTab, setStaffTab] = useState('all')
 
-  // Admin state (derived from existing endpoints only)
+  // Shared state (same endpoints for every role)
   const [emps, setEmps] = useState([])
   const [cats, setCats] = useState([])
   const [coverage, setCoverage] = useState(new Map())
@@ -44,37 +42,24 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
         const all = empRes.data
         const active = all.filter((e) => e.status !== 'inactive')
         setStats((s) => ({ ...s, employees: active.length }))
-        if (!isAdmin) {
-          const fileLists = await Promise.all(
-            active.slice(0, 5).map(async (e) => {
-              const f = await window.api.files.list(e.id)
-              return (f.ok ? f.data : []).map((file) => ({ ...file, employee: e }))
-            })
-          )
-          const list = fileLists.flat().sort((a, b) => (a.created_at < b.created_at ? 1 : -1)).slice(0, 6)
-          if (!mounted) return
-          setStats((s) => ({ ...s, files: list.length }))
-          setRecent(list)
-        } else {
-          setEmps(active)
-          // Coverage matrix + uploads feed from existing files endpoint
-          const fileLists = await Promise.all(
-            active.map(async (e) => {
-              const f = await window.api.files.list(e.id)
-              return (f.ok ? f.data : []).map((file) => ({ ...file, employee: e }))
-            })
-          )
-          if (!mounted) return
-          const allFiles = fileLists.flat()
-          setUploads(allFiles.sort((a, b) => (a.created_at < b.created_at ? 1 : -1)))
-          setHires([...active].sort((a, b) => (String(a.created_at) < String(b.created_at) ? 1 : -1)))
-          setStats((s) => ({ ...s, files: allFiles.length }))
-        }
+        setEmps(active)
+        // Coverage matrix + uploads feed from existing files endpoint
+        const fileLists = await Promise.all(
+          active.map(async (e) => {
+            const f = await window.api.files.list(e.id)
+            return (f.ok ? f.data : []).map((file) => ({ ...file, employee: e }))
+          })
+        )
+        if (!mounted) return
+        const allFiles = fileLists.flat()
+        setUploads(allFiles.sort((a, b) => (a.created_at < b.created_at ? 1 : -1)))
+        setHires([...active].sort((a, b) => (String(a.created_at) < String(b.created_at) ? 1 : -1)))
+        setStats((s) => ({ ...s, files: allFiles.length }))
       }
       if (catRes.ok) {
         const subTotal = catRes.data.reduce((n, c) => n + c.subcategories.length, 0)
         setStats((s) => ({ ...s, categories: catRes.data.length, subcategories: subTotal }))
-        if (isAdmin && mounted) setCats(catRes.data)
+        if (mounted) setCats(catRes.data)
       }
     })()
     return () => {
@@ -86,7 +71,7 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
     setTablePage(1)
   }, [tableSearch])
 
-  // ---- Admin derived data (no new endpoints) ----
+  // ---- Shared derived data (no new endpoints) ----
   const subToCat = useMemo(() => {
     const m = new Map()
     for (const c of cats) for (const s of c.subcategories || []) m.set(s.id, c.id)
@@ -252,7 +237,7 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
       <WelcomeCard user={user} isAdmin={isAdmin} />
 
       {/* Row 1: stat cards */}
-      {isAdmin ? (
+      {(
         <div className="grid grid-cols-2 gap-3 lg:gap-4">
           <StatCard
             tile="bg-tile-orange"
@@ -283,54 +268,23 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
             sublabel={`${100 - completePct}% incomplete`}
           />
         </div>
-      ) : (
-        <div className="mt-3 grid grid-cols-2 gap-3 lg:mt-5 lg:gap-4">
-          <StatCard
-            tile="bg-tile-blue"
-            icon={<FileIcon />}
-            value={stats.files}
-            label="My Documents"
-            sublabel="Uploaded in my 201 File"
-            onClick={() => onNavigate('employees')}
-          />
-          <StatCard
-            tile="bg-tile-green"
-            icon={<CheckCircleIcon />}
-            value={stats.categories}
-            label="Complete Categories"
-            sublabel={`Out of ${stats.categories} required categories`}
-            onClick={() => onNavigate('categories')}
-          />
-          <StatCard
-            tile="bg-tile-orange"
-            icon={<ClockIcon />}
-            value={0}
-            label="For Updating"
-            sublabel="No documents need updating"
-          />
-          <StatCard
-            tile="bg-tile-red"
-            icon={<DocMinusIcon />}
-            value={0}
-            label="Pending Requests"
-            sublabel="No pending document requests"
-          />
-        </div>
       )}
 
-      {/* Row 2: admin table + categories */}
-      {isAdmin && (
+      {/* Row 2: employee table + categories */}
+      {(
         <div className="mt-3 grid grid-cols-2 gap-3 lg:mt-5 lg:gap-4">
           {/* Employee Records table (8 cols) */}
           <section className="gov-card animate-rise p-4 lg:p-5">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-[14px] font-bold text-text-primary lg:text-[17px]">Employee Records</h2>
-              <button
-                onClick={() => onNavigate('employees')}
-                className="flex items-center gap-1.5 rounded-[8px] bg-navy-btn px-3 py-2 text-[13px] font-semibold text-white transition-all duration-150 hover:brightness-110 lg:px-4 lg:py-2.5 lg:text-sm"
-              >
-                <PlusIcon /> Add Employee
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => onNavigate('employees')}
+                  className="flex items-center gap-1.5 rounded-[8px] bg-navy-btn px-3 py-2 text-[13px] font-semibold text-white transition-all duration-150 hover:brightness-110 lg:px-4 lg:py-2.5 lg:text-sm"
+                >
+                  <PlusIcon /> Add Employee
+                </button>
+              )}
             </div>
             <div className="relative mb-3">
               <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted">
@@ -490,8 +444,8 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
         </div>
       )}
 
-      {/* Row 3: admin preview + recent activities */}
-      {isAdmin && (
+      {/* Row 3: file preview + recent activities */}
+      {(
         <div className="mt-3 grid grid-cols-2 gap-3 lg:mt-5 lg:gap-4">
           {/* 201 File Preview (8 cols) */}
           <section className="gov-card animate-rise p-4 lg:p-5">
@@ -629,7 +583,7 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
       )}
 
       {/* Reports & analytics eyebrow */}
-      {isAdmin && (
+      {(
         <div className="mb-3 mt-6 flex items-center gap-3 lg:mb-4">
           <span className="font-mono text-[10px] font-semibold uppercase tracking-[2px] text-text-muted lg:text-[11px]">
             Reports & Analytics
@@ -639,8 +593,8 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
         </div>
       )}
 
-      {/* Row 4 (admin): analytics — documents by category + completion donut */}
-      {isAdmin && (
+      {/* Row 4: analytics — documents by category + completion donut */}
+      {(
         <div className="mt-3 grid grid-cols-2 gap-3 lg:mt-5 lg:gap-4">
           <section className="gov-card animate-rise p-4 lg:p-5">
             <div className="mb-1 flex items-center justify-between">
@@ -715,8 +669,8 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
         </div>
       )}
 
-      {/* Row 5 (admin): filing trend + top offices */}
-      {isAdmin && (
+      {/* Row 5: filing trend + top offices */}
+      {(
         <div className="mt-3 grid grid-cols-2 gap-3 lg:mt-5 lg:gap-4">
           <section className="gov-card animate-rise p-4 lg:p-5">
             <div className="mb-1 flex items-center justify-between">
@@ -784,8 +738,8 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
         </div>
       )}
 
-      {/* Row 6 (admin): file types + needs attention */}
-      {isAdmin && (
+      {/* Row 6: file types + needs attention */}
+      {(
         <div className="mt-3 grid grid-cols-2 gap-3 lg:mt-5 lg:gap-4">
           <section className="gov-card animate-rise flex flex-col items-center p-4 text-center lg:p-5">
             <h2 className="text-[14px] font-bold text-text-primary lg:text-[17px]">Documents by File Type</h2>
@@ -891,116 +845,6 @@ export default function Dashboard({ user, onNavigate, onOpenFolder }) {
         </div>
       )}
 
-      {/* Staff: documents + assistance */}
-      {!isAdmin && (
-        <div className="mt-3 grid grid-cols-2 gap-3 lg:mt-5 lg:gap-4">
-          <section className="gov-card animate-rise p-4 lg:p-5">
-            <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 className="text-[14px] font-bold text-text-primary lg:text-[17px]">My 201 File</h2>
-                <p className="mt-0.5 text-[11px] text-text-secondary lg:text-[12px]">
-                  View and manage the documents in your personal 201 file.
-                </p>
-              </div>
-              <button
-                onClick={() => onNavigate('employees')}
-                className="flex items-center gap-1.5 rounded-[8px] bg-navy-btn px-3 py-2 text-[13px] font-semibold text-white transition-all duration-150 hover:brightness-110 lg:px-4 lg:py-2.5 lg:text-sm"
-              >
-                <PlusIcon /> Upload Document
-              </button>
-            </div>
-
-            <div className="mt-3 flex gap-1 border-b border-border">
-              {[
-                { key: 'all', label: 'All Documents' },
-                { key: 'updating', label: 'For Updating' }
-              ].map((t) => (
-                <button
-                  key={t.key}
-                  onClick={() => setStaffTab(t.key)}
-                  className={`relative px-3 py-1.5 text-[12px] font-semibold transition-colors lg:py-2 lg:text-[13px] ${
-                    staffTab === t.key ? 'text-navy-800' : 'text-text-secondary hover:text-text-primary'
-                  }`}
-                >
-                  {t.label}
-                  {staffTab === t.key && (
-                    <span className="absolute inset-x-0 -bottom-px h-[3px] rounded-full bg-accent" />
-                  )}
-                </button>
-              ))}
-            </div>
-
-            {staffTab === 'updating' ? (
-              <div className="rounded-b-xl border border-t-0 border-border bg-white px-5 py-10 text-center text-sm text-text-muted">
-                No documents need updating.
-              </div>
-            ) : recent.length === 0 ? (
-              <div className="rounded-b-xl border border-t-0 border-border bg-white px-5 py-10 text-center text-sm text-text-muted">
-                No files filed yet. Open an employee folder to begin filing documents.
-              </div>
-            ) : (
-              <div className="overflow-x-auto rounded-b-xl border border-t-0 border-border">
-                <table className="gov-table w-full min-w-[600px] text-left text-[12px]">
-                  <thead>
-                    <tr className="font-semibold text-text-primary">
-                      <th className="w-10 px-4 py-2.5">#</th>
-                      <th className="px-4 py-2.5">Document Name</th>
-                      <th className="px-4 py-2.5">Category</th>
-                      <th className="px-4 py-2.5">Date Uploaded</th>
-                      <th className="px-4 py-2.5">Status</th>
-                      <th className="px-4 py-2.5 text-center">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border bg-white">
-                    {recent.map((f, i) => (
-                      <tr key={f.id} className="transition-colors">
-                        <td className="px-4 py-2.5 font-mono text-text-muted">{i + 1}</td>
-                        <td className="max-w-52 truncate px-4 py-2.5 font-medium text-text-primary">
-                          {f.file_name}
-                        </td>
-                        <td className="px-4 py-2.5 text-text-secondary">{f.subcategory_name}</td>
-                        <td className="whitespace-nowrap px-4 py-2.5 text-text-secondary">
-                          {String(f.created_at).slice(0, 10)}
-                        </td>
-                        <td className="px-4 py-2.5">
-                          <span className="rounded-full bg-success-bg px-2.5 py-1 text-xs font-semibold text-success-text">
-                            Complete
-                          </span>
-                        </td>
-                        <td className="px-4 py-2.5">
-                          <div className="flex items-center justify-center gap-1">
-                            <button
-                              onClick={() => window.api.files.openPath(f.id)}
-                              title="View document"
-                              className="rounded-lg p-1.5 text-tile-blue transition-colors hover:bg-info-bg"
-                            >
-                              <EyeIcon />
-                            </button>
-                            <button
-                              onClick={() => window.api.files.openPath(f.id)}
-                              title="Download document"
-                              className="rounded-lg p-1.5 text-tile-blue transition-colors hover:bg-info-bg"
-                            >
-                              <DownloadIcon />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-
-          <AssistCard
-            title="Need Assistance?"
-            text="For document-related concerns, please coordinate with the HR Unit."
-            buttonLabel="Send a Document Request"
-            onClick={() => onNavigate('employees')}
-          />
-        </div>
-      )}
     </div>
   )
 }
@@ -1053,24 +897,6 @@ function fmtDate(iso) {
   const [y, m, d] = String(iso).slice(0, 10).split('-')
   if (!y || !m || !d) return String(iso).slice(0, 10)
   return `${months[Number(m) - 1] || ''} ${Number(d)}, ${y}`
-}
-
-function AssistCard({ title, text, buttonLabel, onClick }) {
-  return (
-    <aside className="animate-rise rounded-2xl border border-border bg-gradient-to-br from-info-bg to-white p-4 lg:p-5">
-      <h2 className="text-[14px] font-bold text-text-primary lg:text-[17px]">{title}</h2>
-      <p className="mt-1.5 text-[11px] leading-relaxed text-text-secondary lg:text-[12px]">{text}</p>
-      <button
-        onClick={onClick}
-        className="mt-4 flex items-center gap-2 rounded-[8px] bg-navy-btn px-3 py-2 text-[13px] font-semibold text-white transition-all duration-150 hover:brightness-110 lg:px-4 lg:py-2.5 lg:text-sm"
-      >
-        <DocIcon /> {buttonLabel}
-      </button>
-      <p className="mt-4 font-mono text-[11px] uppercase tracking-wider text-text-muted">
-        Asenso Ozamiz
-      </p>
-    </aside>
-  )
 }
 
 function Donut({ segments, size = 148, thickness = 14, children }) {
@@ -1207,15 +1033,6 @@ function FolderIcon() {
   )
 }
 
-function DocIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-    </svg>
-  )
-}
-
 function CheckCircleIcon() {
   return (
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1235,25 +1052,6 @@ function AlertIcon() {
   )
 }
 
-function ClockIcon() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  )
-}
-
-function DocMinusIcon() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="9" y1="13" x2="15" y2="13" />
-    </svg>
-  )
-}
-
 function ChevronRightIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -1267,16 +1065,6 @@ function EyeIcon() {
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
       <circle cx="12" cy="12" r="3" />
-    </svg>
-  )
-}
-
-function DownloadIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
     </svg>
   )
 }
