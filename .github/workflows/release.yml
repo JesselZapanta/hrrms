@@ -121,13 +121,13 @@ jobs:
           ls -la dist/ | grep -i -E "exe|blockmap|latest" || true
           HAVE=$(gh release view "$TAG" --json assets --jq ".assets[].name")
           echo "$HAVE"
-          # NOTE: local dist files use spaces ("HR201FMS Setup 1.32.0.exe") while
+          # NOTE: local dist files use spaces ("HRDRMS Setup 1.33.0.exe") while
           # uploaded assets use dashes — copy to dash names so a re-uploaded
           # blockmap matches the URL electron-updater derives from the exe.
           EXE_FILE=$(ls dist/*.exe 2>/dev/null | head -n 1)
           MAP_FILE=$(ls dist/*.blockmap 2>/dev/null | head -n 1)
-          DASH_EXE="dist/HR201FMS-Setup-${{ steps.bump.outputs.version }}.exe"
-          DASH_MAP="dist/HR201FMS-Setup-${{ steps.bump.outputs.version }}.exe.blockmap"
+          DASH_EXE="dist/HRDRMS-Setup-${{ steps.bump.outputs.version }}.exe"
+          DASH_MAP="dist/HRDRMS-Setup-${{ steps.bump.outputs.version }}.exe.blockmap"
           [ -n "$EXE_FILE" ] && cp -f "$EXE_FILE" "$DASH_EXE"
           [ -n "$MAP_FILE" ] && cp -f "$MAP_FILE" "$DASH_MAP"
           if ! echo "$HAVE" | grep -q "\.exe$"; then
@@ -152,7 +152,7 @@ jobs:
           echo "checking $TAG"
           ASSETS=$(gh release view "$TAG" --json assets --jq ".assets[].name")
           echo "$ASSETS"
-          echo "$ASSETS" | grep -q "HR201FMS-Setup-${{ steps.bump.outputs.version }}.exe" || { echo "MISSING exe"; exit 1; }
+          echo "$ASSETS" | grep -q "HRDRMS-Setup-${{ steps.bump.outputs.version }}.exe" || { echo "MISSING exe"; exit 1; }
           echo "$ASSETS" | grep -q "blockmap" || { echo "MISSING blockmap"; exit 1; }
           echo "$ASSETS" | grep -q "latest.yml" || { echo "MISSING latest.yml (split/duplicate release?)"; exit 1; }
           echo "release $TAG is complete"

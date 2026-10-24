@@ -9,7 +9,6 @@ const META = {
   employees: { title: 'Employees', subtitle: 'Records Management' },
   folder: { title: 'Employee Folder', subtitle: 'Filing Documents' },
   categories: { title: 'File Categories', subtitle: 'Filing Structure' },
-  offices: { title: 'Offices', subtitle: 'City Offices Directory' },
   salaryGrades: { title: 'Salary Grades', subtitle: 'Salary Standardization' },
   users: { title: 'User Management', subtitle: 'Access Control' },
   profile: { title: 'Profile', subtitle: 'Account Settings' }
@@ -34,7 +33,7 @@ export default function Layout({ user, view, onNavigate, children, onLogout }) {
     return () => off?.()
   }, [])
   const meta = META[view] || META.dashboard
-  const hideBreadcrumb = ['dashboard', 'users', 'employees', 'categories', 'offices', 'salaryGrades'].includes(view)
+  const hideBreadcrumb = ['dashboard', 'users', 'employees', 'categories', 'salaryGrades'].includes(view)
 
   return (
     <div className="flex h-full flex-col bg-canvas">
@@ -99,7 +98,7 @@ export default function Layout({ user, view, onNavigate, children, onLogout }) {
               <LogoutIcon />
             </span>
             <div>
-              <div className="text-sm font-semibold text-text-primary">Log out of HR201FMS?</div>
+              <div className="text-sm font-semibold text-text-primary">Log out of HRDRMS?</div>
               <p className="mt-0.5 text-xs text-text-secondary">
                 You will need to sign in again to continue.
               </p>

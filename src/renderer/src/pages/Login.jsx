@@ -48,7 +48,7 @@ export default function Login({ onLogin }) {
               Human Resource
             </div>
             <div className="truncate text-[15px] font-medium uppercase leading-tight text-white/90">
-              201 Files Management System
+              Digital Records Management System
             </div>
             <div className="mt-1 font-mono text-[10px] uppercase tracking-[2px] text-white/60">
               City Council Office · LGU Ozamiz
@@ -92,7 +92,7 @@ export default function Login({ onLogin }) {
             <div>
               <div className="font-heading text-base font-bold uppercase leading-tight text-navy-900">Human Resource</div>
               <div className="font-mono text-[10px] uppercase tracking-[2px] text-text-muted">
-                201 Files Management System
+                Digital Records Management System
               </div>
             </div>
           </div>
@@ -118,7 +118,7 @@ export default function Login({ onLogin }) {
                   Human Resource
                 </div>
                 <div className="truncate text-xs font-medium uppercase leading-tight text-white/85">
-                  201 Files Management System
+                  Digital Records Management System
                 </div>
                 <div className="mt-1 font-mono text-[10px] uppercase tracking-[2px] text-white/60">
                   City Council Office · LGU Ozamiz

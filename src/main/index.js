@@ -63,7 +63,7 @@ function createMainWindow(onReady) {
     height: 800,
     minWidth: 1024,
     minHeight: 700,
-    title: 'HR201FMS - City Council Office, LGU Ozamiz',
+    title: 'HRDRMS - City Council Office, LGU Ozamiz',
     backgroundColor: '#FAF8F4',
     autoHideMenuBar: true,
     show: false,
